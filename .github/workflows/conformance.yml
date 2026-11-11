@@ -17,15 +17,17 @@ permissions:
 jobs:
   conformance:
     name: Official suite · ${{ matrix.framework }}
-    runs-on: ubuntu-latest
+    # Upstream v3.11.0 pins Playwright 1.58, which can't install browsers on
+    # Ubuntu 26.04 (today's ubuntu-latest). Move on when the pin is bumped.
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         framework: [react, vue3]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
