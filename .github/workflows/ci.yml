@@ -16,6 +16,7 @@ jobs:
   package:
     name: Package · Node ${{ matrix.node }} · Nest ${{ matrix.nest }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -56,6 +57,7 @@ jobs:
   demo:
     name: Demo browser suite · ${{ matrix.mode }}
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     needs: package
     strategy:
       fail-fast: false
@@ -77,15 +79,21 @@ jobs:
       - run: npm run typecheck -w demo
       - run: npm run db:fresh -w demo
 
+      # The Vite dev server (HMR assets, SSR through /__inertia_ssr) next to a
+      # one-off server build: `npm run dev`'s watchers restart the server while
+      # their first builds finish, which races the readiness check.
       - name: Start (dev)
         if: matrix.mode == 'dev'
+        working-directory: apps/demo
         run: |
-          npm run dev -w demo > dev.log 2>&1 &
+          npm run build:server
+          npx vite > ../../vite.log 2>&1 &
+          node --enable-source-maps dist/main.js > ../../dev.log 2>&1 &
           for i in $(seq 1 60); do
-            curl -sf "$BASE/login" > /dev/null && [ -f apps/demo/public/hot ] && exit 0
+            curl -sf "$BASE/login" > /dev/null && [ -f public/hot ] && exit 0
             sleep 2
           done
-          cat dev.log; exit 1
+          cat ../../dev.log ../../vite.log; exit 1
 
       - name: Start (production)
         if: matrix.mode == 'production'
@@ -102,4 +110,4 @@ jobs:
       - run: npm run test:browser
       - name: Server logs
         if: failure()
-        run: cat dev.log app.log ssr.log 2>/dev/null || true
+        run: cat dev.log vite.log app.log ssr.log 2>/dev/null || true
