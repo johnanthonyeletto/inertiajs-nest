@@ -10,6 +10,13 @@ on:
       inertia_ref:
         description: 'inertiajs/inertia ref to test against (default: the pinned release)'
         required: false
+      baseline:
+        description: 'Triage: run against upstream''s own helpers.js instead of the adapter'
+        type: boolean
+        default: false
+      playwright_args:
+        description: 'Triage: extra Playwright arguments, e.g. "tests/links.spec.ts:910 --repeat-each=5"'
+        required: false
 
 permissions:
   contents: read
@@ -33,7 +40,10 @@ jobs:
           cache: npm
       # conformance/run.sh provides pnpm itself (an npx-pinned pnpm when none is installed).
       - run: npm ci
-      - run: conformance/run.sh ${{ matrix.framework }}
+      # PLAYWRIGHT_ARGS is word-split on purpose (it's a list of arguments).
+      - run: conformance/run.sh ${{ matrix.framework }} $PLAYWRIGHT_ARGS
         env:
+          PLAYWRIGHT_ARGS: ${{ inputs.playwright_args }}
           CI: 'true'
           INERTIA_REF: ${{ inputs.inertia_ref }}
+          CONFORMANCE_BASELINE: ${{ inputs.baseline && '1' || '' }}
