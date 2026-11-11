@@ -21,6 +21,7 @@ describe('inertia-nest/vite', () => {
     expect(client.build.outDir).toBe('public/build')
     expect(client.build.manifest).toBe(true)
     expect((client.build.rolldownOptions ?? client.build.rollupOptions).input).toBe('resources/js/app.ts')
+    expect(client.optimizeDeps.entries).toEqual(['resources/js/app.ts', 'resources/js/**/*.{js,jsx,ts,tsx,vue,svelte}'])
 
     const ssr = await resolveConfig(
       { root, configFile: false, build: { ssr: 'resources/js/app.ts' }, plugins: [nestInertia()] },

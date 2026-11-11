@@ -18,7 +18,7 @@
  */
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, posix, resolve } from 'node:path'
 import { type Plugin, type ResolvedConfig, type UserConfig, version as viteVersion } from 'vite'
 
 export interface NestInertiaPluginOptions {
@@ -67,6 +67,12 @@ export default function nestInertia(options: NestInertiaPluginOptions = {}): Plu
               manifest: config.build?.manifest ?? true,
               ...(hasInput(config) ? {} : { [BUNDLER_OPTIONS]: { input } }),
             },
+        // Nest serves the HTML, so there's no index.html for Vite to scan for
+        // dependencies. Without entries it discovers them during the first
+        // page load and then reloads the page; scan the client sources up front.
+        optimizeDeps: {
+          entries: config.optimizeDeps?.entries ?? clientSources(input),
+        },
         server: {
           // Pages are served by Nest on another origin.
           cors: config.server?.cors ?? { origin: /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/ },
@@ -101,6 +107,13 @@ export default function nestInertia(options: NestInertiaPluginOptions = {}): Plu
 
 // Vite 8 bundles with Rolldown and renamed `build.rollupOptions`.
 const BUNDLER_OPTIONS = Number(viteVersion.split('.')[0]) >= 8 ? 'rolldownOptions' : 'rollupOptions'
+
+function clientSources(input: string | string[]): string[] {
+  const inputs = Array.isArray(input) ? input : [input]
+  const directories = [...new Set(inputs.map((entry) => posix.dirname(entry.replaceAll('\\', '/'))))]
+
+  return [...inputs, ...directories.map((directory) => `${directory}/**/*.{js,jsx,ts,tsx,vue,svelte}`)]
+}
 
 function hasInput(config: UserConfig): boolean {
   const build = config.build as Record<string, { input?: unknown } | undefined> | undefined

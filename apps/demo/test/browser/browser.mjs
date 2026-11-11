@@ -44,6 +44,12 @@ const toast = (text) => page.locator('[aria-live="polite"]').getByText(text).wai
 const go = async (path) => {
   await page.goto(BASE + path)
   await page.waitForLoadState('networkidle')
+  // Server-rendered markup is visible before React hydrates; interacting
+  // earlier (e.g. on a cold dev server) would trigger native form posts.
+  await page.waitForFunction(() => {
+    const root = document.getElementById('app')
+    return !!root && Object.keys(root).some((key) => key.startsWith('__reactContainer$'))
+  })
 }
 
 // Every sidebar page: once through Inertia navigation, once as a full (SSR) page load.
