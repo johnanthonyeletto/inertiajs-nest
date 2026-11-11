@@ -1,0 +1,29 @@
+import { Injectable } from '@nestjs/common'
+import type { Request } from 'express'
+import { InertiaMiddleware } from 'inertia-nest'
+
+/**
+ * Shares data with every page and sets the asset version. Apply it to your
+ * routes after the session middleware (see AppModule.configure()).
+ */
+@Injectable()
+export class HandleInertiaRequests extends InertiaMiddleware {
+  /** Props shared with every page, resolved when the page renders. */
+  share(request: Request) {
+    return {
+      // auth: { user: request.user ?? null },
+    }
+  }
+
+  /** The asset version. Defaults to a hash of the Vite manifest. */
+  version(request: Request) {
+    return super.version(request)
+  }
+
+  // Customise the HTML document for full page visits:
+  //
+  // rootView(context: RootViewContext) {
+  //   return `<!DOCTYPE html><html><head>${inertiaHead(context, { title: 'My App' })}</head>` +
+  //     `<body>${inertiaBody(context)}</body></html>`
+  // }
+}

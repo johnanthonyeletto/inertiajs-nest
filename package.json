@@ -1,0 +1,28 @@
+{
+  "name": "inertiajs-nest-workspace",
+  "private": true,
+  "description": "An Inertia.js v3 server-side adapter for NestJS, its demo app, and its conformance harness.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w inertia-nest && npm run build -w demo",
+    "build:package": "npm run build -w inertia-nest",
+    "dev": "npm run dev -w demo",
+    "start": "npm run start -w demo",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test -w inertia-nest",
+    "test:browser": "npm run test:browser -w demo",
+    "test:conformance": "conformance/run.sh",
+    "pack:check": "npm run build:package && npm pack --dry-run -w inertia-nest"
+  },
+  "allowScripts": {
+    "sqlite3@6.0.1": true
+  }
+}

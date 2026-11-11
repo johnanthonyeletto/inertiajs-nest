@@ -1,0 +1,13 @@
+import inertia from '@inertiajs/vite'
+{{frameworkImport}}
+import nestInertia from 'inertia-nest/vite'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [inertia(), {{frameworkPlugin}}, nestInertia({ input: '{{entry}}' })],
+  server: {
+    port: 5173,
+    strictPort: true,
+    origin: 'http://localhost:5173',
+  },
+})

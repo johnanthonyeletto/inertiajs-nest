@@ -1,0 +1,37 @@
+name: Conformance
+
+# Runs the official inertiajs/inertia Playwright suite, unmodified, against the
+# adapter (see conformance/README.md).
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      inertia_ref:
+        description: 'inertiajs/inertia ref to test against (default: the pinned release)'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    name: Official suite · ${{ matrix.framework }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [react, vue3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # conformance/run.sh provides pnpm itself (an npx-pinned pnpm when none is installed).
+      - run: npm ci
+      - run: conformance/run.sh ${{ matrix.framework }}
+        env:
+          CI: 'true'
+          INERTIA_REF: ${{ inputs.inertia_ref }}

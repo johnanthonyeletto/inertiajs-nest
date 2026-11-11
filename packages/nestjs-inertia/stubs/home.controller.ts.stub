@@ -1,0 +1,10 @@
+import { Controller, Get } from '@nestjs/common'
+import { Inertia, type InertiaContext } from 'inertia-nest'
+
+@Controller()
+export class HomeController {
+  @Get()
+  index(@Inertia() inertia: InertiaContext) {
+    return inertia.render('Home', { message: 'Hello from NestJS and Inertia' })
+  }
+}

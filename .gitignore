@@ -1,0 +1,19 @@
+node_modules/
+dist/
+*.tsbuildinfo
+*.tgz
+.env
+.DS_Store
+coverage/
+
+# Demo app
+apps/demo/public/build/
+apps/demo/public/hot
+apps/demo/bootstrap/ssr/
+apps/demo/database/*.sqlite
+apps/demo/database/*.sqlite-journal
+apps/demo/storage/uploads/*
+!apps/demo/storage/uploads/.gitkeep
+
+# Conformance: the upstream inertiajs/inertia checkout
+conformance/inertia/
