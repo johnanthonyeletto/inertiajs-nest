@@ -1,4 +1,4 @@
-# inertia-nest
+# @johnanthonyeletto/nestjs-inertia
 
 An [Inertia.js](https://inertiajs.com) v3 server-side adapter for [NestJS](https://nestjs.com). Build single-page apps with React, Vue, or Svelte while keeping NestJS controllers, guards, pipes, and routing, without a separate API.
 
@@ -32,7 +32,7 @@ Requirements: NestJS 12, Node.js ≥ 22.12, and the Express platform. The packag
 In an existing NestJS 12 app:
 
 ```bash
-npm install inertia-nest express-session
+npm install @johnanthonyeletto/nestjs-inertia express-session
 npx nestjs-inertia install
 ```
 
@@ -44,7 +44,7 @@ The install command asks for your client framework (React, Vue, or Svelte) and w
 | `src/home.controller.ts` | An example controller rendering the `Home` page |
 | `resources/js/app.tsx` (or `app.ts`) | The client entry |
 | `resources/js/Pages/Home.*` | The first page component |
-| `vite.config.ts` | `@inertiajs/vite`, your framework's plugin, and `inertia-nest/vite` |
+| `vite.config.ts` | `@inertiajs/vite`, your framework's plugin, and `@johnanthonyeletto/nestjs-inertia/vite` |
 | `tsconfig.client.json` | TypeScript settings for the client code |
 
 It also adds the npm scripts `dev:client`, `build:client`, `build:ssr`, and `ssr:start`, and adds `public/hot`, `public/build/`, and `bootstrap/ssr/` to `.gitignore`.
@@ -67,7 +67,7 @@ npm install -D vite @inertiajs/vite @inertiajs/react react react-dom @vitejs/plu
 import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common'
 import { APP_FILTER } from '@nestjs/core'
 import session from 'express-session'
-import { InertiaExceptionFilter, InertiaModule } from 'inertia-nest'
+import { InertiaExceptionFilter, InertiaModule } from '@johnanthonyeletto/nestjs-inertia'
 import { HomeController } from './home.controller.js'
 import { HandleInertiaRequests } from './inertia/handle-inertia-requests.js'
 
@@ -115,7 +115,7 @@ Inject the request's `InertiaContext` with `@Inertia()` and return `inertia.rend
 
 ```ts
 import { Controller, Get, Param } from '@nestjs/common'
-import { Inertia, type InertiaContext } from 'inertia-nest'
+import { Inertia, type InertiaContext } from '@johnanthonyeletto/nestjs-inertia'
 
 @Controller('users')
 export class UsersController {
@@ -192,8 +192,8 @@ Pick a validator and register the pipe:
 
 ```ts
 import { APP_PIPE } from '@nestjs/core'
-import { InertiaValidationPipe } from 'inertia-nest'
-import { classValidator } from 'inertia-nest/validation/class-validator'   // or: zodValidator() from 'inertia-nest/validation/zod'
+import { InertiaValidationPipe } from '@johnanthonyeletto/nestjs-inertia'
+import { classValidator } from '@johnanthonyeletto/nestjs-inertia/validation/class-validator'   // or: zodValidator() from '@johnanthonyeletto/nestjs-inertia/validation/zod'
 
 InertiaModule.forRoot({ validator: classValidator() })
 providers: [{ provide: APP_PIPE, useClass: InertiaValidationPipe }]
@@ -209,12 +209,12 @@ To fail validation manually (for example after a database check), `throw Validat
 **Zod.** Attach a schema to a class so Nest can see it:
 
 ```ts
-import { zodDto } from 'inertia-nest/validation/zod'
+import { zodDto } from '@johnanthonyeletto/nestjs-inertia/validation/zod'
 
 class CreateContactDto extends zodDto(z.object({ name: z.string().min(1) })) {}
 ```
 
-**Keeping Nest's `ValidationPipe`.** Pass the factory: `new ValidationPipe({ exceptionFactory: inertiaExceptionFactory })`, from `inertia-nest/validation/class-validator`.
+**Keeping Nest's `ValidationPipe`.** Pass the factory: `new ValidationPipe({ exceptionFactory: inertiaExceptionFactory })`, from `@johnanthonyeletto/nestjs-inertia/validation/class-validator`.
 
 **Precognition.** Add `@Precognitive()` to a route or a controller. A request with `Precognition: true` runs your guards and pipes, so the body is validated (only the `Precognition-Validate-Only` fields, when that header is sent). The handler never runs: the response is `204 Precognition-Success` when validation passes, or `422` with the errors.
 
@@ -272,7 +272,7 @@ If the bundle is missing or rendering fails, the page falls back to client-side 
 Full page loads render an HTML document. The default is minimal. To customise it, override `rootView()`:
 
 ```ts
-import { inertiaBody, inertiaHead, type RootViewContext } from 'inertia-nest'
+import { inertiaBody, inertiaHead, type RootViewContext } from '@johnanthonyeletto/nestjs-inertia'
 
 rootView(context: RootViewContext) {
   return `<!DOCTYPE html>
@@ -298,9 +298,9 @@ Augment the types once, and `render()` checks the props you pass for each page:
 
 ```ts
 // src/inertia/pages.d.ts
-import 'inertia-nest/types'
+import '@johnanthonyeletto/nestjs-inertia/types'
 
-declare module 'inertia-nest/types' {
+declare module '@johnanthonyeletto/nestjs-inertia/types' {
   interface InertiaPages {
     'Users/Show': { user: User; stats: Stats }
   }
@@ -310,14 +310,14 @@ declare module 'inertia-nest/types' {
 }
 ```
 
-`inertia-nest/types` has no runtime code, so the client can import from it too, for example to type `usePage()`.
+`@johnanthonyeletto/nestjs-inertia/types` has no runtime code, so the client can import from it too, for example to type `usePage()`.
 
 ## Testing
 
-`inertia-nest/testing` provides fluent assertions modelled on Laravel's `assertInertia`. They work with supertest (or any response with headers and a body) and throw plain `AssertionError`s, so they run under Vitest, Jest, or `node:test`:
+`@johnanthonyeletto/nestjs-inertia/testing` provides fluent assertions modelled on Laravel's `assertInertia`. They work with supertest (or any response with headers and a body) and throw plain `AssertionError`s, so they run under Vitest, Jest, or `node:test`:
 
 ```ts
-import { assertInertia, deferredPropsHeaders, inertiaHeaders, inertiaPage } from 'inertia-nest/testing'
+import { assertInertia, deferredPropsHeaders, inertiaHeaders, inertiaPage } from '@johnanthonyeletto/nestjs-inertia/testing'
 
 const response = await request(app.getHttpServer()).get('/users/1').set(inertiaHeaders())
 
@@ -375,13 +375,13 @@ InertiaModule.forRoot(defineConfig({
 
 | Import | Contents |
 |---|---|
-| `inertia-nest` | Module, middleware, context, decorators, prop types, responses, filter, pipe, root-view helpers |
-| `inertia-nest/types` | `Page`, `PageProps`, `SharedProps`, `InertiaPages` (types only) |
-| `inertia-nest/vite` | The Vite plugin |
-| `inertia-nest/testing` | `assertInertia`, `inertiaPage`, `inertiaHeaders`, `deferredPropsHeaders` |
-| `inertia-nest/validation/class-validator` | `classValidator()`, `inertiaExceptionFactory` |
-| `inertia-nest/validation/zod` | `zodValidator()`, `zodDto()` |
-| `inertia-nest/express` | Express glue: `isInertiaRequest`, the `Request` augmentation |
+| `@johnanthonyeletto/nestjs-inertia` | Module, middleware, context, decorators, prop types, responses, filter, pipe, root-view helpers |
+| `@johnanthonyeletto/nestjs-inertia/types` | `Page`, `PageProps`, `SharedProps`, `InertiaPages` (types only) |
+| `@johnanthonyeletto/nestjs-inertia/vite` | The Vite plugin |
+| `@johnanthonyeletto/nestjs-inertia/testing` | `assertInertia`, `inertiaPage`, `inertiaHeaders`, `deferredPropsHeaders` |
+| `@johnanthonyeletto/nestjs-inertia/validation/class-validator` | `classValidator()`, `inertiaExceptionFactory` |
+| `@johnanthonyeletto/nestjs-inertia/validation/zod` | `zodValidator()`, `zodDto()` |
+| `@johnanthonyeletto/nestjs-inertia/express` | Express glue: `isInertiaRequest`, the `Request` augmentation |
 
 ## Protocol coverage
 

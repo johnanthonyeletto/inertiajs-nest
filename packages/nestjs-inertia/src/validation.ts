@@ -45,8 +45,8 @@ export type ValidationResult = { success: true; value: unknown } | { success: fa
 
 /**
  * Validates a pipe argument against its declared type. Implementations ship
- * for class-validator (`inertia-nest/validation/class-validator`) and Zod
- * (`inertia-nest/validation/zod`).
+ * for class-validator (`@johnanthonyeletto/nestjs-inertia/validation/class-validator`) and Zod
+ * (`@johnanthonyeletto/nestjs-inertia/validation/zod`).
  */
 export interface InertiaValidator {
   /** Whether the validator handles arguments declared with this type. */

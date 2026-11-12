@@ -1,5 +1,5 @@
 /**
- * Zod integration (`inertia-nest/validation/zod`). Works with Zod 3.25+ and 4.
+ * Zod integration (`@johnanthonyeletto/nestjs-inertia/validation/zod`). Works with Zod 3.25+ and 4.
  *
  * Nest validates parameters by their declared class, so schemas are attached
  * to a class with `zodDto()` (classes from `nestjs-zod`'s `createZodDto()`

@@ -1,6 +1,6 @@
 import inertia from '@inertiajs/vite'
 {{frameworkImport}}
-import nestInertia from 'inertia-nest/vite'
+import nestInertia from '@johnanthonyeletto/nestjs-inertia/vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig({

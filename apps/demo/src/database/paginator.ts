@@ -1,6 +1,6 @@
 import type { Request } from 'express'
 import type { FindOptions, Model, ModelStatic } from 'sequelize'
-import type { ProvidesScrollMetadata, ScrollMetadata } from 'inertia-nest'
+import type { ProvidesScrollMetadata, ScrollMetadata } from '@johnanthonyeletto/nestjs-inertia'
 
 export interface PaginationLink {
   url: string | null

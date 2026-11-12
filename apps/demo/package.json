@@ -2,7 +2,7 @@
   "name": "demo",
   "version": "0.0.0",
   "private": true,
-  "description": "A Sequelize-backed CRM and feature tour demonstrating inertia-nest.",
+  "description": "A Sequelize-backed CRM and feature tour demonstrating @johnanthonyeletto/nestjs-inertia.",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -10,8 +10,8 @@
   },
   "scripts": {
     "dev": "pnpm build:package && pnpm build:server && concurrently -k -n pkg,tsc,nest,vite -c cyan,yellow,blue,magenta \"pnpm:watch:package\" \"pnpm:watch:server\" \"pnpm:serve:dev\" \"vite\"",
-    "build:package": "pnpm --filter inertia-nest build",
-    "watch:package": "pnpm --filter inertia-nest watch",
+    "build:package": "pnpm --filter @johnanthonyeletto/nestjs-inertia build",
+    "watch:package": "pnpm --filter @johnanthonyeletto/nestjs-inertia watch",
     "watch:server": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "serve:dev": "node --enable-source-maps --watch dist/main.js",
     "build": "pnpm build:server && pnpm build:client && pnpm build:ssr",
@@ -36,7 +36,7 @@
     "class-validator": "^0.15.1",
     "cookie-parser": "^1.4.7",
     "express-session": "^1.19.0",
-    "inertia-nest": "workspace:*",
+    "@johnanthonyeletto/nestjs-inertia": "workspace:*",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "sequelize": "^6.37.8",

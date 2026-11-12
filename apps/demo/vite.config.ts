@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import inertia from '@inertiajs/vite'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import nestInertia from 'inertia-nest/vite'
+import nestInertia from '@johnanthonyeletto/nestjs-inertia/vite'
 import { defineConfig } from 'vite'
 
 const DEV_SERVER_PORT = Number(process.env.VITE_PORT ?? 5173)

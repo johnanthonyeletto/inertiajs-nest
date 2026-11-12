@@ -5,7 +5,7 @@ import type { Request } from 'express'
 import { AuthGuard } from '../auth/auth.js'
 import { now, randomInt, sleep } from '../common/time.js'
 import { Contact } from '../database/models/index.js'
-import { Inertia, type InertiaContext } from 'inertia-nest'
+import { Inertia, type InertiaContext } from '@johnanthonyeletto/nestjs-inertia'
 
 class FlashDto {
   @IsIn(['success', 'error', 'warning'])

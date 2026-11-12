@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '../auth/auth.js'
 import { Contact, Note, Organization, User } from '../database/models/index.js'
-import { Inertia, type InertiaContext } from 'inertia-nest'
+import { Inertia, type InertiaContext } from '@johnanthonyeletto/nestjs-inertia'
 import { serializeContact, serializeNote } from './serializers.js'
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))

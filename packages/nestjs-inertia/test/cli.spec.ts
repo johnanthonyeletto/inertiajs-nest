@@ -19,7 +19,7 @@ describe('nestjs-inertia install', () => {
   let root: string
 
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), 'inertia-nest-install-'))
+    root = mkdtempSync(join(tmpdir(), 'nestjs-inertia-install-'))
     writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'my-app', scripts: { build: 'nest build' } }, null, 2))
     writeFileSync(join(root, '.gitignore'), 'node_modules\n')
   })

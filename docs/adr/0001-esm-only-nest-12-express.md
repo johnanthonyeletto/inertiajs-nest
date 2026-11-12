@@ -10,7 +10,7 @@ NestJS 12 ships as ESM only. The best-maintained TypeScript Inertia adapter, `@a
 
 - Publish ESM only, with an `exports` map and no CommonJS build.
 - Support NestJS `^12.0.0` and Node.js `>=22.12`. Node 22.12 is the first LTS where `require(esm)` works without a flag, so CommonJS apps can still load the package.
-- Support the Express platform only for now. Express-specific code (the `Request` augmentation, response guards) lives in `src/express.ts` and is also exposed as `inertia-nest/express`, so a Fastify entry point can be added alongside it later.
+- Support the Express platform only for now. Express-specific code (the `Request` augmentation, response guards) lives in `src/express.ts` and is also exposed as `@johnanthonyeletto/nestjs-inertia/express`, so a Fastify entry point can be added alongside it later.
 
 ## Consequences
 

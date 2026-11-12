@@ -1,6 +1,6 @@
 import { type MiddlewareConsumer, Module, type NestModule, RequestMethod } from '@nestjs/common'
 import { APP_FILTER, APP_PIPE } from '@nestjs/core'
-import { InertiaModule, InertiaValidationPipe } from 'inertia-nest'
+import { InertiaModule, InertiaValidationPipe } from '@johnanthonyeletto/nestjs-inertia'
 import { AuthController } from './auth/auth.controller.js'
 import { AuthMiddleware } from './auth/auth.js'
 import { CsrfMiddleware } from './common/csrf.js'

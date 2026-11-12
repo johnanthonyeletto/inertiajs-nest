@@ -1,0 +1,41 @@
+name: Version check
+
+# Fails a PR when files that ship in the package changed since the last release
+# tag but packages/nestjs-inertia/package.json still has that tag's version.
+# Comparing against the last tag (not the base branch) lets several PRs share
+# one bump. Add the `no release` label to skip, e.g. for a devDependency bump.
+# A separate workflow from CI so adding/removing the label doesn't re-run CI.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  version-bump:
+    name: Version bump
+    # Skipped jobs count as passing for required checks, so the label overrides.
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'no release') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # full history and tags
+      - name: Shipped files changed since the last release need a new version
+        env:
+          BASE: origin/${{ github.base_ref }}
+        run: |
+          last=$(git describe --tags --abbrev=0 --match 'v*' "$BASE" 2>/dev/null) \
+            || { echo "No release tag yet; nothing to check."; exit 0; }
+          pkg=packages/nestjs-inertia
+          changed=$(git diff --name-only "$last" HEAD -- "$pkg/src" "$pkg/bin" "$pkg/stubs" "$pkg/package.json")
+          [ -n "$changed" ] || { echo "No shipped files changed since $last."; exit 0; }
+          version="v$(node -p "require('./$pkg/package.json').version")"
+          if [ "$version" = "$last" ]; then
+            echo "::error::Shipped files changed since $last, but the version is still $version. Bump $pkg/package.json, or add the 'no release' label."
+            echo "$changed"
+            exit 1
+          fi
+          echo "OK: $last -> $version"

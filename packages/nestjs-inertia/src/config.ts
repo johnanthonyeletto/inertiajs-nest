@@ -23,7 +23,7 @@ export interface ViteConfig {
   entry?: string[]
   /**
    * File written by the Vite dev server while it is running (see the
-   * `inertia-nest/vite` plugin). Defaults to `public/hot`.
+   * `@johnanthonyeletto/nestjs-inertia/vite` plugin). Defaults to `public/hot`.
    */
   hotFile?: string
   /** Directory served at the web root. Defaults to `public`. */

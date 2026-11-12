@@ -4,7 +4,7 @@
  *
  * Page assembly (component name, url, version, route-supplied metadata,
  * alwaysProps, every HTML template branch) is identical to upstream's
- * helpers.js. The protocol engine is routed through `inertia-nest` instead of
+ * helpers.js. The protocol engine is routed through `@johnanthonyeletto/nestjs-inertia` instead of
  * the suite's inline code:
  *
  *   - partial-reload filtering and prop evaluation: `PropsResolver`
@@ -40,7 +40,7 @@ const {
   encodePageForScript,
   isInertiaRequest,
   serializePage,
-} = require('inertia-nest')
+} = require('@johnanthonyeletto/nestjs-inertia')
 
 // The redirect rules the adapter's middleware installs on every response. It is
 // a private method, but it uses no instance state, so it can be applied to a
@@ -53,7 +53,7 @@ if (typeof installRedirectRules !== 'function') {
 // Audit trail: Playwright pipes the web server's stderr into the run output, so
 // this line proves the swap happened in the server it spawned.
 process.stderr.write(
-  `[conformance] helpers swapped -> ${__filename} (inertia-nest: ${require.resolve('inertia-nest')})\n`,
+  `[conformance] helpers swapped -> ${__filename} (@johnanthonyeletto/nestjs-inertia: ${require.resolve('@johnanthonyeletto/nestjs-inertia')})\n`,
 )
 
 /** Whether a page contains a bigint or a `{"$bigint": ...}` marker (upstream's opt-in stand-in). */
@@ -92,7 +92,7 @@ const buildPageData = (req, data) => {
   // Stands in for the Laravel opt-in by flagging pages that carry big integers
   // or markers. A route can pass `preserveBigIntegers: false` to act like an
   // app that builds its own markers. The encoding itself happens at transport
-  // time, in inertia-nest's `serializePage` (`encodeBigInt` replacer).
+  // time, in @johnanthonyeletto/nestjs-inertia's `serializePage` (`encodeBigInt` replacer).
   if (page.preserveBigIntegers === undefined && containsBigInts(page)) {
     page.preserveBigIntegers = true
   }
@@ -101,7 +101,7 @@ const buildPageData = (req, data) => {
 }
 
 /**
- * Replacement for upstream's `processPartialProps`: inertia-nest's
+ * Replacement for upstream's `processPartialProps`: @johnanthonyeletto/nestjs-inertia's
  * `PropsResolver` reads the partial-reload headers from the Express request,
  * filters the props and evaluates closures. The route's props are passed
  * as-is and never rewritten, so closures are called the way the adapter calls
@@ -288,7 +288,7 @@ module.exports = {
 
     return res.status(200).send(applyDefaultNonce(req, html))
   }),
-  // inertia-nest semantics: 409 + X-Inertia-Location for Inertia requests, a
+  // @johnanthonyeletto/nestjs-inertia semantics: 409 + X-Inertia-Location for Inertia requests, a
   // plain 302 otherwise. A version, when given, is echoed the way the
   // middleware answers a stale client.
   location: (res, href, version) => {
@@ -298,7 +298,7 @@ module.exports = {
 
     return new LocationResponse(href).toResponse(res.req, res)
   },
-  // inertia-nest semantics: the middleware's redirect rules turn a redirect to
+  // @johnanthonyeletto/nestjs-inertia semantics: the middleware's redirect rules turn a redirect to
   // a fragment URL into 409 + X-Inertia-Redirect (except for prefetches) and
   // promote 302 to 303 after PUT/PATCH/DELETE.
   redirect: (res, href) => {

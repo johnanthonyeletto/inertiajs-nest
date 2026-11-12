@@ -9,17 +9,17 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "build": "pnpm --filter inertia-nest build && pnpm --filter demo build",
-    "build:package": "pnpm --filter inertia-nest build",
+    "build": "pnpm --filter @johnanthonyeletto/nestjs-inertia build && pnpm --filter demo build",
+    "build:package": "pnpm --filter @johnanthonyeletto/nestjs-inertia build",
     "dev": "pnpm --filter demo dev",
     "start": "pnpm --filter demo start",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm --filter inertia-nest test",
+    "test": "pnpm --filter @johnanthonyeletto/nestjs-inertia test",
     "test:browser": "pnpm --filter demo test:browser",
     "test:conformance": "conformance/run.sh",
-    "pack:check": "pnpm build:package && pnpm --filter inertia-nest pack --dry-run"
+    "pack:check": "pnpm build:package && pnpm --filter @johnanthonyeletto/nestjs-inertia pack --dry-run"
   },
   "devDependencies": {
-    "inertia-nest": "workspace:*"
+    "@johnanthonyeletto/nestjs-inertia": "workspace:*"
   }
 }

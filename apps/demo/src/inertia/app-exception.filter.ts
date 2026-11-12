@@ -1,5 +1,5 @@
 import { Catch } from '@nestjs/common'
-import { escapeHtml, HtmlResponse, InertiaExceptionFilter, type RenderErrorContext } from 'inertia-nest'
+import { escapeHtml, HtmlResponse, InertiaExceptionFilter, type RenderErrorContext } from '@johnanthonyeletto/nestjs-inertia'
 
 /** Renders errors on Inertia visits and page loads; API requests keep Nest's JSON errors. */
 @Catch()

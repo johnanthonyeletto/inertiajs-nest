@@ -4,11 +4,11 @@ import { join } from 'node:path'
 import { createServer, resolveConfig } from 'vite'
 import nestInertia from '../src/vite-plugin/index.js'
 
-describe('inertia-nest/vite', () => {
+describe('@johnanthonyeletto/nestjs-inertia/vite', () => {
   let root: string
 
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), 'inertia-nest-vite-'))
+    root = mkdtempSync(join(tmpdir(), 'nestjs-inertia-vite-'))
   })
 
   afterEach(() => rmSync(root, { recursive: true, force: true }))

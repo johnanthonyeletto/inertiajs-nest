@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import type { Request } from 'express'
-import { InertiaMiddleware } from 'inertia-nest'
+import { InertiaMiddleware } from '@johnanthonyeletto/nestjs-inertia'
 
 /**
  * Shares data with every page and sets the asset version. Apply it to your

@@ -11,8 +11,8 @@ Precognition (live server-side validation of forms) is part of the Inertia v3 cl
 - Keep Precognition. It's a differentiator, and the protocol is small.
 - Mark a route or controller with `@Precognitive()`. The decorator wraps the handler, so that for a Precognition request the handler throws `PrecognitionSuccessException` instead of running. Guards and pipes still run first. Validation therefore works with any pipe (ours, Nest's `ValidationPipe`, or a custom one), and the deep import is gone.
 - Validation goes through a small `InertiaValidator` interface (`supports(metatype)`, `validate(value, metatype, metadata)`), used by `InertiaValidationPipe`. Two integrations ship as separate entry points whose dependencies are optional peers:
-  - `inertia-nest/validation/class-validator`, which provides `classValidator()` and an `inertiaExceptionFactory` for Nest's `ValidationPipe`;
-  - `inertia-nest/validation/zod`, which provides `zodValidator()` and `zodDto()` for Zod 3.25+ and 4.
+  - `@johnanthonyeletto/nestjs-inertia/validation/class-validator`, which provides `classValidator()` and an `inertiaExceptionFactory` for Nest's `ValidationPipe`;
+  - `@johnanthonyeletto/nestjs-inertia/validation/zod`, which provides `zodValidator()` and `zodDto()` for Zod 3.25+ and 4.
 - `Precognition-Validate-Only` filtering is shared: `precognitiveErrors()` and `validationExceptionFor()`.
 
 ## Consequences

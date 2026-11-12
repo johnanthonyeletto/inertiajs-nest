@@ -6,7 +6,7 @@ import { now, randomInt, sleep } from '../common/time.js'
 import { serializeContact } from '../crm/serializers.js'
 import { Contact, Organization } from '../database/models/index.js'
 import { paginate } from '../database/paginator.js'
-import { Header, Inertia, type InertiaContext } from 'inertia-nest'
+import { Header, Inertia, type InertiaContext } from '@johnanthonyeletto/nestjs-inertia'
 
 const pick = <T>(items: T[]): T => items[randomInt(0, items.length - 1)]
 

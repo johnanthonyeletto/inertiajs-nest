@@ -1,8 +1,15 @@
 {
-  "name": "inertia-nest",
+  "name": "@johnanthonyeletto/nestjs-inertia",
   "version": "0.1.0",
-  "private": true,
   "description": "Inertia.js v3 server-side adapter for NestJS",
+  "author": "John Eletto",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnanthonyeletto/inertiajs-nest.git",
+    "directory": "packages/nestjs-inertia"
+  },
+  "homepage": "https://github.com/johnanthonyeletto/inertiajs-nest/tree/master/packages/nestjs-inertia#readme",
+  "bugs": "https://github.com/johnanthonyeletto/inertiajs-nest/issues",
   "keywords": [
     "inertia",
     "inertiajs",
@@ -16,6 +23,9 @@
   "type": "module",
   "engines": {
     "node": ">=22.12"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "sideEffects": false,
   "exports": {

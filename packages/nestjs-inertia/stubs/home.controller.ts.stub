@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common'
-import { Inertia, type InertiaContext } from 'inertia-nest'
+import { Inertia, type InertiaContext } from '@johnanthonyeletto/nestjs-inertia'
 
 @Controller()
 export class HomeController {
