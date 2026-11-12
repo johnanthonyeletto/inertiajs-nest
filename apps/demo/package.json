@@ -9,12 +9,12 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "dev": "npm run build:package && npm run build:server && concurrently -k -n pkg,tsc,nest,vite -c cyan,yellow,blue,magenta \"npm:watch:package\" \"npm:watch:server\" \"npm:serve:dev\" \"vite\"",
-    "build:package": "npm run build -w inertia-nest",
-    "watch:package": "npm run watch -w inertia-nest",
+    "dev": "pnpm build:package && pnpm build:server && concurrently -k -n pkg,tsc,nest,vite -c cyan,yellow,blue,magenta \"pnpm:watch:package\" \"pnpm:watch:server\" \"pnpm:serve:dev\" \"vite\"",
+    "build:package": "pnpm --filter inertia-nest build",
+    "watch:package": "pnpm --filter inertia-nest watch",
     "watch:server": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "serve:dev": "node --enable-source-maps --watch dist/main.js",
-    "build": "npm run build:server && npm run build:client && npm run build:ssr",
+    "build": "pnpm build:server && pnpm build:client && pnpm build:ssr",
     "build:server": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
     "build:client": "vite build",
     "build:ssr": "vite build --ssr",
@@ -22,7 +22,7 @@
     "start:ssr": "nestjs-inertia ssr:start",
     "stop:ssr": "nestjs-inertia ssr:stop",
     "check:ssr": "nestjs-inertia ssr:check",
-    "db:fresh": "npm run build:server && node dist/database/cli.js fresh",
+    "db:fresh": "pnpm build:server && node dist/database/cli.js fresh",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.client.json",
     "test:browser": "node test/browser/browser.mjs"
   },
@@ -36,7 +36,7 @@
     "class-validator": "^0.15.1",
     "cookie-parser": "^1.4.7",
     "express-session": "^1.19.0",
-    "inertia-nest": "*",
+    "inertia-nest": "workspace:*",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "sequelize": "^6.37.8",
@@ -44,11 +44,13 @@
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
+    "@inertiajs/core": "^3.11.0",
     "@inertiajs/react": "^3.11.0",
     "@inertiajs/vite": "^3.11.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
+    "@types/express-serve-static-core": "^5.1.3",
     "@types/express-session": "^1.19.0",
     "@types/multer": "^2.3.0",
     "@types/node": "^22.20.5",

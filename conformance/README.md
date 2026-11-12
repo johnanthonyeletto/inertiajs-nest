@@ -6,7 +6,7 @@ real Chromium. The upstream suite is pinned to a release, the adapter is rebuilt
 from this repo on every run, and the upstream checkout is never modified.
 
 ```bash
-npm run test:conformance            # react (default)
+pnpm test:conformance               # react (default)
 conformance/run.sh react            # same thing
 conformance/run.sh vue3             # or svelte
 ```
@@ -39,7 +39,8 @@ The run swaps it without changing a file in the checkout:
    normally.
 2. **`helpers.cjs`** is a port of upstream's `helpers.js`. It loads the adapter
    with `require('inertia-nest')`, which works through Node's require(esm)
-   support (Node 22.12 or later) and the workspace symlink in `node_modules`.
+   support (Node 22.12 or later) and the workspace symlink in the root
+   `node_modules` (the root `package.json` lists `inertia-nest: workspace:*` for this).
    Page assembly is the same as upstream's: the component name, URL, version,
    the metadata the route computed, the `alwaysProps` merge and every HTML
    template branch. The protocol engine runs through the adapter:
@@ -223,8 +224,9 @@ minutes. Delete `conformance/inertia/` to force a fresh fetch.
 
 pnpm: upstream requires pnpm 11.1.1 or later (`engines.pnpm` in its
 `package.json`). If `pnpm` on `PATH` is missing or older than that, `run.sh`
-puts a `pnpm@11.5.3` shim (through npx) first on `PATH`. CI relies on this
-shim.
+puts a `pnpm@11.5.3` shim (through npx) first on `PATH`. This repo itself pins
+pnpm 11.5.3 (`packageManager`), which CI installs, so the shim is only a
+fallback for older local installs.
 
 The Conformance workflow runs on every push to `master`. It can also be
 started manually, with optional `baseline`, `inertia_ref` and
