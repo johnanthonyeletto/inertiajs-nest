@@ -24,35 +24,31 @@ jobs:
         nest: [latest, '12.0']
     steps:
       - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       # Workspace manifests ask for the latest Nest, so the older minor has to be
-      # pinned there (a root-level install would be shadowed by the workspace's
-      # own nested copy).
+      # pinned in each workspace that depends on it.
       - name: Install the lowest supported Nest minor
         if: matrix.nest != 'latest'
         run: |
-          for p in common core platform-express testing; do
-            npm pkg set "devDependencies.@nestjs/$p=${{ matrix.nest }}" -w inertia-nest
-          done
-          for p in common core platform-express; do
-            npm pkg set "dependencies.@nestjs/$p=${{ matrix.nest }}" -w demo
-          done
-          npm install --no-audit --no-fund
+          v='${{ matrix.nest }}'
+          pnpm --filter inertia-nest add -D "@nestjs/common@$v" "@nestjs/core@$v" "@nestjs/platform-express@$v" "@nestjs/testing@$v"
+          pnpm --filter demo add "@nestjs/common@$v" "@nestjs/core@$v" "@nestjs/platform-express@$v"
       - name: Check the Nest version under test
         working-directory: packages/nestjs-inertia
         run: |
           version=$(node -e "const p=require('path').dirname(require.resolve('@nestjs/core'));let d=p;while(!require('fs').existsSync(d+'/package.json'))d=require('path').dirname(d);console.log(JSON.parse(require('fs').readFileSync(d+'/package.json','utf8')).version)")
           echo "Testing against @nestjs/core $version"
           case "${{ matrix.nest }}" in latest) ;; *) [[ "$version" == ${{ matrix.nest }}.* ]] || { echo "expected ${{ matrix.nest }}.x"; exit 1; } ;; esac
-      - run: npm run typecheck -w inertia-nest
-      - run: npm run build -w inertia-nest
-      - run: npm test
+      - run: pnpm --filter inertia-nest typecheck
+      - run: pnpm --filter inertia-nest build
+      - run: pnpm test
       - name: Check the published file list
-        run: npm pack --dry-run -w inertia-nest
+        run: pnpm --filter inertia-nest pack --dry-run
 
   demo:
     name: Demo browser suite · ${{ matrix.mode }}
@@ -68,26 +64,27 @@ jobs:
       BASE: http://localhost:3000
     steps:
       - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
         working-directory: apps/demo
-      - run: npm run build -w inertia-nest
-      - run: npm run typecheck -w demo
-      - run: npm run db:fresh -w demo
+      - run: pnpm --filter inertia-nest build
+      - run: pnpm --filter demo typecheck
+      - run: pnpm --filter demo db:fresh
 
       # The Vite dev server (HMR assets, SSR through /__inertia_ssr) next to a
-      # one-off server build: `npm run dev`'s watchers restart the server while
+      # one-off server build: `pnpm dev`'s watchers restart the server while
       # their first builds finish, which races the readiness check.
       - name: Start (dev)
         if: matrix.mode == 'dev'
         working-directory: apps/demo
         run: |
-          npm run build:server
-          npx vite > ../../vite.log 2>&1 &
+          pnpm build:server
+          pnpm exec vite > ../../vite.log 2>&1 &
           node --enable-source-maps dist/main.js > ../../dev.log 2>&1 &
           for i in $(seq 1 60); do
             curl -sf "$BASE/login" > /dev/null && [ -f public/hot ] && exit 0
@@ -98,16 +95,16 @@ jobs:
       - name: Start (production)
         if: matrix.mode == 'production'
         run: |
-          npm run build -w demo
-          npm run start:ssr -w demo > ssr.log 2>&1 &
-          npm run start -w demo > app.log 2>&1 &
+          pnpm --filter demo build
+          pnpm --filter demo start:ssr > ssr.log 2>&1 &
+          pnpm --filter demo start > app.log 2>&1 &
           for i in $(seq 1 30); do
-            curl -sf "$BASE/login" > /dev/null && npm run check:ssr -w demo && exit 0
+            curl -sf "$BASE/login" > /dev/null && pnpm --filter demo check:ssr && exit 0
             sleep 2
           done
           cat app.log ssr.log; exit 1
 
-      - run: npm run test:browser
+      - run: pnpm test:browser
       - name: Server logs
         if: failure()
         run: cat dev.log vite.log app.log ssr.log 2>/dev/null || true

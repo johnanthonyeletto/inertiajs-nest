@@ -1,0 +1,7 @@
+packages:
+  - packages/*
+  - apps/*
+
+# Dependencies whose install scripts are allowed to run.
+allowBuilds:
+  sqlite3: true

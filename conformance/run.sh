@@ -94,7 +94,8 @@ fi
 
 # Upstream requires pnpm >= 11.1.1 (package.json engines). Playwright's web
 # server command calls `pnpm` itself, so it must be on PATH: use the local one if
-# it is new enough, otherwise put an npx-backed shim first on PATH.
+# it is new enough (this repo pins pnpm 11.5.3 in packageManager), otherwise put an
+# npx-backed shim first on PATH.
 PNPM_MIN="11.1.1"
 PNPM_VERSION="11.5.3"
 pnpm_ok() {
@@ -118,8 +119,8 @@ node -e 'const [a,b]=process.versions.node.split(".").map(Number); process.exit(
 # 1. Build the adapter. helpers.cjs loads its dist, so a stale build would
 #    silently test old code.
 echo "==> Building inertia-nest"
-[ -e "$ROOT/node_modules/inertia-nest" ] || { echo "!! run 'npm install' at the repo root first" >&2; exit 1; }
-( cd "$ROOT" && npm run build -w inertia-nest )
+[ -e "$ROOT/node_modules/inertia-nest" ] || { echo "!! run 'pnpm install' at the repo root first" >&2; exit 1; }
+( cd "$ROOT" && pnpm --filter inertia-nest build )
 
 # 2. Put the upstream checkout at the wanted ref (shallow, exact commit).
 if [ ! -d "$INERTIA/.git" ]; then

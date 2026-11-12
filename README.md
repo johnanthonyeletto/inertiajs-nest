@@ -10,18 +10,18 @@ An [Inertia.js v3](https://inertiajs.com/docs/v3/core-concepts/the-protocol) ser
 | [`docs/adr`](docs/adr) | Architecture decision records |
 | [`docs/packaging-plan.md`](docs/packaging-plan.md) | The research and plan behind the package |
 
-Requires Node.js 22.12 or later. This is an npm workspace: run `npm install` once at the root.
+Requires Node.js 22.12 or later. This is a pnpm workspace (pnpm 11, pinned in `packageManager`): run `pnpm install` once at the root.
 
 ## Quick start (demo)
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open http://localhost:3000 and sign in with `johndoe@example.com` / `secret` (pre-filled). The database is created and seeded the first time the app boots.
 
-`npm run dev` builds the adapter, then runs four processes:
+`pnpm dev` builds the adapter, then runs four processes:
 - the adapter in watch mode;
 - `tsc --watch` for the demo server;
 - `node --watch dist/main.js`;
@@ -32,9 +32,9 @@ While Vite runs, the `inertia-nest/vite` plugin writes `apps/demo/public/hot`, s
 ### Production
 
 ```bash
-npm run build                    # the adapter, then the demo's server, client bundle, and SSR bundle
-npm run start:ssr -w demo        # nestjs-inertia ssr:start: the Inertia SSR server on 127.0.0.1:13714
-npm start                        # the demo on :3000
+pnpm build                       # the adapter, then the demo's server, client bundle, and SSR bundle
+pnpm --filter demo start:ssr     # nestjs-inertia ssr:start: the Inertia SSR server on 127.0.0.1:13714
+pnpm start                       # the demo on :3000
 ```
 
 If the SSR server isn't running, pages fall back to client-side rendering. The failure is logged but never fatal.
@@ -53,14 +53,14 @@ If the SSR server isn't running, pages fall back to client-side rendering. The f
 
 | Script | Description |
 | --- | --- |
-| `npm test` | The adapter's Vitest suite: unit and HTTP-level protocol tests, tests ported from inertia-laravel, the testing helpers, the CLI, and the Vite plugin |
-| `npm run test:browser` | 38 Playwright checks of every demo page against a running demo (`BASE=http://localhost:3000`) |
-| `npm run test:conformance` | The official Inertia Playwright suite against the adapter (see [`conformance/README.md`](conformance/README.md)) |
-| `npm run typecheck` | Type-check every workspace |
-| `npm run pack:check` | Build the adapter and list the files that would be published |
-| `npm run db:fresh -w demo` | Recreate and reseed the demo database |
+| `pnpm test` | The adapter's Vitest suite: unit and HTTP-level protocol tests, tests ported from inertia-laravel, the testing helpers, the CLI, and the Vite plugin |
+| `pnpm test:browser` | 38 Playwright checks of every demo page against a running demo (`BASE=http://localhost:3000`) |
+| `pnpm test:conformance` | The official Inertia Playwright suite against the adapter (see [`conformance/README.md`](conformance/README.md)) |
+| `pnpm typecheck` | Type-check every workspace |
+| `pnpm pack:check` | Build the adapter and list the files that would be published |
+| `pnpm --filter demo db:fresh` | Recreate and reseed the demo database |
 
-`npm run test:browser` needs a Chromium for Playwright (`npx playwright install chromium`). It creates data, so run `npm run db:fresh -w demo` first for a clean slate.
+`pnpm test:browser` needs a Chromium for Playwright (`pnpm --filter demo exec playwright install chromium`). It creates data, so run `pnpm --filter demo db:fresh` first for a clean slate.
 
 CI (`.github/workflows`) runs:
 - the adapter suite on Node 22 and 24, against both the latest NestJS 12 and NestJS 12.0;
@@ -94,4 +94,4 @@ Other supporting pieces:
 - The adapter targets the Express platform. Live props and the DevTools protocol aren't implemented yet; see the adapter's [coverage table](packages/nestjs-inertia/README.md#protocol-coverage).
 - The demo creates its tables with `sequelize.sync()` on boot, which suits a demo. Use migrations for real applications.
 - The package is marked `"private": true` and is named `inertia-nest` for now. Publishing (final name, npm provenance, changelog) is a separate step.
-- `npm audit` reports a moderate advisory in `uuid`, which Sequelize 6 depends on. It concerns an API Sequelize doesn't use, and there's no upstream fix yet.
+- `pnpm audit` reports a moderate advisory in `uuid`, which Sequelize 6 depends on. It concerns an API Sequelize doesn't use, and there's no upstream fix yet.

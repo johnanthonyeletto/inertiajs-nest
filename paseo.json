@@ -1,0 +1,17 @@
+{
+  "worktree": {
+    "setup": "pnpm install"
+  },
+  "scripts": {
+    "dev": {
+      "type": "service",
+      "command": "PORT=$PASEO_PORT VITE_PORT=$((PASEO_PORT + 1)) pnpm dev"
+    },
+    "test": {
+      "command": "pnpm test"
+    },
+    "typecheck": {
+      "command": "pnpm typecheck"
+    }
+  }
+}

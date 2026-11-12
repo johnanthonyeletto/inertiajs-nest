@@ -8,7 +8,7 @@ Phases 1–4 are implemented, except for the publishing steps. Phase 5 and the "
 
 | Phase | State |
 |---|---|
-| 1. Extract | Done. npm workspace with `packages/nestjs-inertia` (package `inertia-nest`), `apps/demo`, and `conformance/`. |
+| 1. Extract | Done. pnpm workspace with `packages/nestjs-inertia` (package `inertia-nest`), `apps/demo`, and `conformance/`. |
 | 2. Library-grade API | Done. Middleware base class, opt-in filter and pipe, session and validator interfaces (class-validator and Zod), `forRootAsync`, root-view helpers, no deep imports and no adapter patch, `QUERY`, big integers, typed pages. |
 | 3. Developer experience | Done. `./testing`, `./vite`, the `nestjs-inertia` CLI (`install`, `ssr:start\|stop\|check`), README, and ADRs in `docs/adr/`. Verified by packing the tarball and taking a fresh Nest 12 app from `install` to an SSR-rendered page, on Nest 12.4 and 12.0. |
 | 4. Conformance and release | Conformance harness, Laravel test ports, and CI are done. **Not done (deferred):** changesets, changelog, npm publish with provenance. The package keeps `"private": true` and the working name `inertia-nest` until the name (Decision 3) is settled. |
@@ -137,7 +137,7 @@ Today the adapter assumes class-validator.
 
 ### Repository layout
 
-Use an npm workspace in this repo:
+Use a pnpm workspace in this repo:
 
 ```
 packages/nestjs-inertia/        the adapter (published)

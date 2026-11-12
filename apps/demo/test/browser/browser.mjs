@@ -1,10 +1,10 @@
 /**
  * End-to-end browser checks for every demo page, run against a live server:
  *
- *   npm run dev            # or: npm run build && npm run start:ssr & npm start
- *   npm run test:browser   # BASE=http://localhost:3000 by default
+ *   pnpm dev               # or: pnpm build && pnpm --filter demo start:ssr & pnpm start
+ *   pnpm test:browser      # BASE=http://localhost:3000 by default
  *
- * Creates some data (contacts, notes), so prefer a fresh database (`npm run db:fresh`).
+ * Creates some data (contacts, notes), so prefer a fresh database (`pnpm --filter demo db:fresh`).
  */
 import { writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
