@@ -186,6 +186,23 @@ For `only: ['account.balance']` (on `/live`), `PropsResolver` returns only the
 returns the whole top-level `account` prop. The 3.11 client merges both
 correctly, so no test fails and nothing is excluded.
 
+## Runner-timing exclusion (CI, vue3 only)
+
+On GitHub's ubuntu runners, one more test is excluded, and only for vue3:
+`links.spec.ts › scroll › scrolls to top after the page has been rendered`. It
+makes 10 navigations under a 10-second test timeout, and on the runner the vue3
+test app is too slow for that. This is **not** a deviation. With
+`--repeat-each=10` on the runner, vue3 failed 9 of 10 times both against
+upstream's own `helpers.js` and against the adapter (Actions runs 43123587333
+and 43123596569), while react passed 10 of 10. Locally it passes both ways.
+
+The list is `CI_TIMING_EXCLUSIONS_VUE3` in `run.sh`. It applies only when `CI`
+is set and the framework is vue3, and it goes through the same exact-count
+check as the known deviations. To re-check it on the runner, start the
+Conformance workflow manually with `baseline` ticked and
+`playwright_args: tests/links.spec.ts:910 --repeat-each=10 --retries=0`. Then
+compare against the same run with `baseline` unticked.
+
 ## Switches
 
 - `CONFORMANCE_BASELINE=1 conformance/run.sh react tests/foo.spec.ts` runs
@@ -205,8 +222,15 @@ monorepo, downloads Chromium and runs the suite. Later runs take about 4
 minutes. Delete `conformance/inertia/` to force a fresh fetch.
 
 pnpm: upstream requires pnpm 11.1.1 or later (`engines.pnpm` in its
-`package.json`). If `pnpm` on `PATH` is older than 11, `run.sh` puts a
-`pnpm@11.5.3` shim (through npx) first on `PATH`. CI should provide pnpm 11.
+`package.json`). If `pnpm` on `PATH` is missing or older than that, `run.sh`
+puts a `pnpm@11.5.3` shim (through npx) first on `PATH`. CI relies on this
+shim.
+
+The Conformance workflow runs on every push to `master`. It can also be
+started manually, with optional `baseline`, `inertia_ref` and
+`playwright_args` inputs for triage. It runs on `ubuntu-24.04`, because the
+Playwright version that upstream v3.11.0 pins can't install browsers on
+Ubuntu 26.04.
 
 ## Last result
 

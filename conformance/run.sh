@@ -77,6 +77,21 @@ KNOWN_DEVIATIONS=(
   'nested-props.spec.ts › it preserves rescued child props when that child path is excluded from reload'
 )
 
+# Runner timing (not deviations): upstream tests that fail just as often
+# against upstream's own helpers.js on GitHub's ubuntu runners, so they say
+# nothing about the adapter. Applied only on CI, only for the listed framework.
+# Evidence: CONFORMANCE_BASELINE=1 vs adapter, --repeat-each=10, vue3: 9/10
+# failed in both (actions runs 43123587333 and 43123596569). Locally both pass.
+CI_TIMING_EXCLUSIONS_VUE3=(
+  # 10 navigations under a 10 s test timeout; too slow on the runner for vue3.
+  'links.spec.ts › scroll › scrolls to top after the page has been rendered'
+)
+
+EXCLUSIONS=("${KNOWN_DEVIATIONS[@]}")
+if [ -n "${CI:-}" ] && [ "$PKG" = vue3 ]; then
+  EXCLUSIONS+=("${CI_TIMING_EXCLUSIONS_VUE3[@]}")
+fi
+
 # Upstream requires pnpm >= 11.1.1 (package.json engines). Playwright's web
 # server command calls `pnpm` itself, so it must be on PATH: use the local one if
 # it is new enough, otherwise put an npx-backed shim first on PATH.
@@ -168,21 +183,21 @@ fi
 # on a word boundary at the start, with every segment regex-escaped.
 EXCLUDE_ARGS=()
 if [ -n "${CONFORMANCE_BASELINE:-}" ] || [ -n "${CONFORMANCE_NO_EXCLUSIONS:-}" ]; then
-  echo "==> Known deviations: NOT excluded (${#KNOWN_DEVIATIONS[@]} listed; all tests run)"
+  echo "==> Exclusions: NOT applied (${#EXCLUSIONS[@]} listed; all tests run)"
 else
   PATTERN="$(node -e '
     const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
     const entries = process.argv.slice(1)
     process.stdout.write(entries.map((e) => "(?:^|\\s)" + e.split(" › ").map(escape).join(" ") + "$").join("|"))
-  ' "${KNOWN_DEVIATIONS[@]}")"
+  ' "${EXCLUSIONS[@]}")"
   MATCHED="$(cd "$INERTIA" && PACKAGE="$PKG" npx playwright test --project chromium --list --grep "$PATTERN" 2>/dev/null \
     | grep -E '^ +\[chromium\] › ' || true)"
   MATCHED_COUNT="$(printf '%s' "$MATCHED" | grep -c . || true)"
-  echo "==> Excluding ${#KNOWN_DEVIATIONS[@]} known deviations (see conformance/README.md, \"Known deviations\"):"
+  echo "==> Excluding ${#EXCLUSIONS[@]} tests: ${#KNOWN_DEVIATIONS[@]} known deviations + $(( ${#EXCLUSIONS[@]} - ${#KNOWN_DEVIATIONS[@]} )) runner-timing (see conformance/README.md):"
   printf '%s\n' "$MATCHED" | sed 's/^ */    /'
-  if [ "$MATCHED_COUNT" -ne "${#KNOWN_DEVIATIONS[@]}" ]; then
-    echo "!! the known-deviations pattern matches $MATCHED_COUNT tests, expected exactly ${#KNOWN_DEVIATIONS[@]};" \
-      "update KNOWN_DEVIATIONS in conformance/run.sh (or run with CONFORMANCE_NO_EXCLUSIONS=1)" >&2
+  if [ "$MATCHED_COUNT" -ne "${#EXCLUSIONS[@]}" ]; then
+    echo "!! the exclusion pattern matches $MATCHED_COUNT tests, expected exactly ${#EXCLUSIONS[@]};" \
+      "update KNOWN_DEVIATIONS / CI_TIMING_EXCLUSIONS_VUE3 in conformance/run.sh (or run with CONFORMANCE_NO_EXCLUSIONS=1)" >&2
     exit 1
   fi
   echo "    excluded: $MATCHED_COUNT tests"
