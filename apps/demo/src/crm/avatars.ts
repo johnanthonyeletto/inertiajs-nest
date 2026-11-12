@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import { extname, join } from 'node:path'
-import { ValidationException } from 'inertia-nest'
+import { ValidationException } from '@johnanthonyeletto/nestjs-inertia'
 
 const UPLOAD_DIRECTORY = 'storage/uploads'
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024

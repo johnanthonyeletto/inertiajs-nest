@@ -4,7 +4,7 @@ An [Inertia.js v3](https://inertiajs.com/docs/v3/core-concepts/the-protocol) ser
 
 | Path | What it is |
 | --- | --- |
-| [`packages/nestjs-inertia`](packages/nestjs-inertia) | **The adapter** (`inertia-nest`). See [its README](packages/nestjs-inertia/README.md) for installation and usage. |
+| [`packages/nestjs-inertia`](packages/nestjs-inertia) | **The adapter** (`@johnanthonyeletto/nestjs-inertia`). See [its README](packages/nestjs-inertia/README.md) for installation and usage. |
 | [`apps/demo`](apps/demo) | A CRM on Sequelize (SQLite) plus a tour of 30+ feature demos in React, built on the adapter's public API |
 | [`conformance`](conformance) | Runs the official `inertiajs/inertia` Playwright suite, unmodified, against the adapter |
 | [`docs/adr`](docs/adr) | Architecture decision records |
@@ -27,7 +27,7 @@ Open http://localhost:3000 and sign in with `johndoe@example.com` / `secret` (pr
 - `node --watch dist/main.js`;
 - the Vite dev server, which provides HMR and SSR through `/__inertia_ssr`.
 
-While Vite runs, the `inertia-nest/vite` plugin writes `apps/demo/public/hot`, so the adapter loads assets and SSR from Vite instead of from the production build.
+While Vite runs, the `@johnanthonyeletto/nestjs-inertia/vite` plugin writes `apps/demo/public/hot`, so the adapter loads assets and SSR from Vite instead of from the production build.
 
 ### Production
 
@@ -93,5 +93,5 @@ Other supporting pieces:
 
 - The adapter targets the Express platform. Live props and the DevTools protocol aren't implemented yet; see the adapter's [coverage table](packages/nestjs-inertia/README.md#protocol-coverage).
 - The demo creates its tables with `sequelize.sync()` on boot, which suits a demo. Use migrations for real applications.
-- The package is marked `"private": true` and is named `inertia-nest` for now. Publishing (final name, npm provenance, changelog) is a separate step.
+- The package is published to npm as `@johnanthonyeletto/nestjs-inertia`. Releases go out through GitHub Releases; see [docs/distribution-plan.md](docs/distribution-plan.md).
 - `pnpm audit` reports a moderate advisory in `uuid`, which Sequelize 6 depends on. It concerns an API Sequelize doesn't use, and there's no upstream fix yet.

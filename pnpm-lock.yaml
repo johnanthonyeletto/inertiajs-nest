@@ -8,7 +8,7 @@ importers:
 
   .:
     devDependencies:
-      inertia-nest:
+      '@johnanthonyeletto/nestjs-inertia':
         specifier: workspace:*
         version: link:packages/nestjs-inertia
 
@@ -17,6 +17,9 @@ importers:
       '@faker-js/faker':
         specifier: ^10.6.0
         version: 10.6.0
+      '@johnanthonyeletto/nestjs-inertia':
+        specifier: workspace:*
+        version: link:../../packages/nestjs-inertia
       '@nestjs/common':
         specifier: ^12.4.2
         version: 12.4.2(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -41,9 +44,6 @@ importers:
       express-session:
         specifier: ^1.19.0
         version: 1.19.0
-      inertia-nest:
-        specifier: workspace:*
-        version: link:../../packages/nestjs-inertia
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2

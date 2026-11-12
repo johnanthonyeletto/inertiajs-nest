@@ -6,7 +6,7 @@ import { ensureCsrfToken } from '../common/csrf.js'
 import { regenerateSession } from '../common/session.js'
 import { User } from '../database/models/index.js'
 import { DEMO_USER } from '../database/seeder.js'
-import { Inertia, type InertiaContext, ValidationException } from 'inertia-nest'
+import { Inertia, type InertiaContext, ValidationException } from '@johnanthonyeletto/nestjs-inertia'
 import { verifyPassword } from './password.js'
 
 export class LoginDto {

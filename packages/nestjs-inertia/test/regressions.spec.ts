@@ -282,7 +282,7 @@ describe('F5: page chunk preloading for any framework', () => {
   const cwd = process.cwd()
 
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), 'inertia-nest-manifest-'))
+    root = mkdtempSync(join(tmpdir(), 'nestjs-inertia-manifest-'))
     mkdirSync(join(root, 'public/build/.vite'), { recursive: true })
     writeFileSync(
       join(root, 'public/build/.vite/manifest.json'),
@@ -317,7 +317,7 @@ describe('F8: ssr:start exit codes', () => {
   let root: string
 
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), 'inertia-nest-ssr-'))
+    root = mkdtempSync(join(tmpdir(), 'nestjs-inertia-ssr-'))
     vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 

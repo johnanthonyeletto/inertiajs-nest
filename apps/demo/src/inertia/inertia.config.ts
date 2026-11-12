@@ -1,5 +1,5 @@
-import { defineConfig } from 'inertia-nest'
-import { classValidator } from 'inertia-nest/validation/class-validator'
+import { defineConfig } from '@johnanthonyeletto/nestjs-inertia'
+import { classValidator } from '@johnanthonyeletto/nestjs-inertia/validation/class-validator'
 
 export const APP_NAME = 'Inertia × NestJS'
 

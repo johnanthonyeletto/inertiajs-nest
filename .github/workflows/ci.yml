@@ -36,7 +36,7 @@ jobs:
         if: matrix.nest != 'latest'
         run: |
           v='${{ matrix.nest }}'
-          pnpm --filter inertia-nest add -D "@nestjs/common@$v" "@nestjs/core@$v" "@nestjs/platform-express@$v" "@nestjs/testing@$v"
+          pnpm --filter @johnanthonyeletto/nestjs-inertia add -D "@nestjs/common@$v" "@nestjs/core@$v" "@nestjs/platform-express@$v" "@nestjs/testing@$v"
           pnpm --filter demo add "@nestjs/common@$v" "@nestjs/core@$v" "@nestjs/platform-express@$v"
       - name: Check the Nest version under test
         working-directory: packages/nestjs-inertia
@@ -44,11 +44,11 @@ jobs:
           version=$(node -e "const p=require('path').dirname(require.resolve('@nestjs/core'));let d=p;while(!require('fs').existsSync(d+'/package.json'))d=require('path').dirname(d);console.log(JSON.parse(require('fs').readFileSync(d+'/package.json','utf8')).version)")
           echo "Testing against @nestjs/core $version"
           case "${{ matrix.nest }}" in latest) ;; *) [[ "$version" == ${{ matrix.nest }}.* ]] || { echo "expected ${{ matrix.nest }}.x"; exit 1; } ;; esac
-      - run: pnpm --filter inertia-nest typecheck
-      - run: pnpm --filter inertia-nest build
+      - run: pnpm --filter @johnanthonyeletto/nestjs-inertia typecheck
+      - run: pnpm --filter @johnanthonyeletto/nestjs-inertia build
       - run: pnpm test
       - name: Check the published file list
-        run: pnpm --filter inertia-nest pack --dry-run
+        run: pnpm --filter @johnanthonyeletto/nestjs-inertia pack --dry-run
 
   demo:
     name: Demo browser suite · ${{ matrix.mode }}
@@ -72,7 +72,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
         working-directory: apps/demo
-      - run: pnpm --filter inertia-nest build
+      - run: pnpm --filter @johnanthonyeletto/nestjs-inertia build
       - run: pnpm --filter demo typecheck
       - run: pnpm --filter demo db:fresh
 

@@ -16,7 +16,7 @@ import { AuthGuard } from '../auth/auth.js'
 import { sleep } from '../common/time.js'
 import { serializeContact } from '../crm/serializers.js'
 import { Contact } from '../database/models/index.js'
-import { Inertia, type InertiaContext, Precognitive, ValidationException } from 'inertia-nest'
+import { Inertia, type InertiaContext, Precognitive, ValidationException } from '@johnanthonyeletto/nestjs-inertia'
 import { AccountDto, PrimaryValidationDto, ProfileDto, SecondaryValidationDto, UploadDto } from './dto.js'
 
 const formatBytes = (bytes: number) =>

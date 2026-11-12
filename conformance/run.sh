@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# Inertia.js v3 conformance run for inertia-nest.
+# Inertia.js v3 conformance run for @johnanthonyeletto/nestjs-inertia.
 #
 # Clones inertiajs/inertia at a pinned release and runs its Playwright suite
 # unmodified. A Node preload (conformance/preload.cjs) redirects the test
 # server's `require('./helpers')` to conformance/helpers.cjs, a transport port
-# backed by inertia-nest, so not one byte of the upstream checkout changes.
+# backed by @johnanthonyeletto/nestjs-inertia, so not one byte of the upstream checkout changes.
 # See conformance/README.md.
 #
 # Usage:  conformance/run.sh [react|vue3|svelte] [extra playwright args...]
@@ -40,7 +40,7 @@ EXPECT_SHA=""
 [ "$INERTIA_REF" = "$INERTIA_TAG" ] && EXPECT_SHA="$INERTIA_TAG_SHA"
 
 # Known deviations: upstream tests that encode a behaviour of the reference
-# server (tests/app/helpers.js) that inertia-nest deliberately does not share.
+# server (tests/app/helpers.js) that @johnanthonyeletto/nestjs-inertia deliberately does not share.
 # Every one passes against upstream's own helpers.js (CONFORMANCE_BASELINE=1).
 # See "Known deviations" in conformance/README.md for the reasoning.
 #
@@ -52,7 +52,7 @@ EXPECT_SHA=""
 KNOWN_DEVIATIONS=(
   # 1. Closure arguments: the /links/partial-reloads and /visits/partial-reloads
   #    routes define `bar: (props) => props.foo + 1`. The reference server calls
-  #    closures as fn(data.props); inertia-nest (like inertia-laravel) calls them
+  #    closures as fn(data.props); @johnanthonyeletto/nestjs-inertia (like inertia-laravel) calls them
   #    with no arguments, so these routes throw and the page 500s.
   'links.spec.ts › partial reloads › does not have headers specific to partial reloads when the feature is not being used'
   'links.spec.ts › partial reloads › has headers specific to partial reloads'
@@ -72,7 +72,7 @@ KNOWN_DEVIATIONS=(
   'manual-visits.spec.ts › Partial Reloads › it only updates props that are passed through "only" (GET)'
   'manual-visits.spec.ts › Partial Reloads › it only updates props that are not passed through "except" (GET)'
   # 2. Nested except: `except: ['auth.notifications']`. The reference server
-  #    drops the whole top-level `auth` key; inertia-nest (like inertia-laravel)
+  #    drops the whole top-level `auth` key; @johnanthonyeletto/nestjs-inertia (like inertia-laravel)
   #    drops only the `auth.notifications` child and sends the rest of `auth`.
   'nested-props.spec.ts › it preserves rescued child props when that child path is excluded from reload'
 )
@@ -118,9 +118,9 @@ node -e 'const [a,b]=process.versions.node.split(".").map(Number); process.exit(
 
 # 1. Build the adapter. helpers.cjs loads its dist, so a stale build would
 #    silently test old code.
-echo "==> Building inertia-nest"
-[ -e "$ROOT/node_modules/inertia-nest" ] || { echo "!! run 'pnpm install' at the repo root first" >&2; exit 1; }
-( cd "$ROOT" && pnpm --filter inertia-nest build )
+echo "==> Building @johnanthonyeletto/nestjs-inertia"
+[ -e "$ROOT/node_modules/@johnanthonyeletto/nestjs-inertia" ] || { echo "!! run 'pnpm install' at the repo root first" >&2; exit 1; }
+( cd "$ROOT" && pnpm --filter @johnanthonyeletto/nestjs-inertia build )
 
 # 2. Put the upstream checkout at the wanted ref (shallow, exact commit).
 if [ ! -d "$INERTIA/.git" ]; then
@@ -173,7 +173,7 @@ else
 fi
 
 PRELOAD_OPTS="--require $CONF/preload.cjs"
-MODE="inertia-nest (helpers swapped)"
+MODE="@johnanthonyeletto/nestjs-inertia (helpers swapped)"
 if [ -n "${CONFORMANCE_BASELINE:-}" ]; then
   PRELOAD_OPTS=""
   MODE="BASELINE: upstream helpers.js, adapter NOT in the loop"
@@ -205,7 +205,7 @@ else
   EXCLUDE_ARGS=(--grep-invert "$PATTERN")
 fi
 
-LOG="$(mktemp "${TMPDIR:-/tmp}/inertia-nest-conformance.XXXXXX")"
+LOG="$(mktemp "${TMPDIR:-/tmp}/nestjs-inertia-conformance.XXXXXX")"
 echo "==> Running conformance suite: $PKG, inertiajs/inertia $INERTIA_REF ($SHA), $MODE"
 echo "    log: $LOG"
 # NODE_OPTIONS flows playwright -> pnpm serve -> node server.js, where the

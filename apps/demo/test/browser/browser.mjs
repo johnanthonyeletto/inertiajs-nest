@@ -12,8 +12,8 @@ import { join } from 'node:path'
 import { chromium } from 'playwright'
 
 const BASE = process.env.BASE ?? 'http://localhost:3000'
-const avatarPath = join(tmpdir(), 'inertia-nest-avatar.png')
-const bigFilePath = join(tmpdir(), 'inertia-nest-big.bin')
+const avatarPath = join(tmpdir(), 'nestjs-inertia-avatar.png')
+const bigFilePath = join(tmpdir(), 'nestjs-inertia-big.bin')
 const browser = await chromium.launch()
 const context = await browser.newContext()
 const page = await context.newPage()
@@ -239,7 +239,7 @@ await check('file uploads: multipart with progress', async () => {
   await page.setInputFiles('#files', [bigFilePath, avatarPath])
   await page.click('button:has-text("Upload")')
   await toast('"Docs": uploaded 2 file(s).')
-  await expectText('inertia-nest-big.bin')
+  await expectText('nestjs-inertia-big.bin')
   await expectText('3.0 MB')
 })
 await check('validation: error bags', async () => {

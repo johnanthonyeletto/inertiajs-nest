@@ -1,0 +1,43 @@
+name: Release
+
+# Publishes packages/nestjs-inertia to npm when a GitHub Release is published.
+# Authenticates with npm trusted publishing (OIDC), so there's no NPM_TOKEN and
+# provenance is attached automatically. See docs/distribution-plan.md.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          # Node 24 ships npm 11, which trusted publishing needs (>= 11.5.1).
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - name: Check the tag matches the package version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version="v$(node -p "require('./packages/nestjs-inertia/package.json').version")"
+          [ "$version" = "$TAG" ] || { echo "::error::Release tag $TAG doesn't match package version $version."; exit 1; }
+      - run: pnpm --filter @johnanthonyeletto/nestjs-inertia typecheck
+      - run: pnpm --filter @johnanthonyeletto/nestjs-inertia build
+      - run: pnpm test
+      # pnpm builds the tarball; npm's CLI does the OIDC exchange and provenance.
+      - name: Publish
+        working-directory: packages/nestjs-inertia
+        run: |
+          pnpm pack
+          npm publish ./*.tgz --access public

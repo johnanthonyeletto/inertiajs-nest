@@ -1,7 +1,7 @@
 # Inertia.js v3 conformance run
 
 This directory runs the official `inertiajs/inertia` Playwright suite (about 1,370
-browser tests written by the Inertia maintainers) against `inertia-nest` in a
+browser tests written by the Inertia maintainers) against `@johnanthonyeletto/nestjs-inertia` in a
 real Chromium. The upstream suite is pinned to a release, the adapter is rebuilt
 from this repo on every run, and the upstream checkout is never modified.
 
@@ -38,9 +38,9 @@ The run swaps it without changing a file in the checkout:
    hook returns `conformance/helpers.cjs` instead. Every other module resolves
    normally.
 2. **`helpers.cjs`** is a port of upstream's `helpers.js`. It loads the adapter
-   with `require('inertia-nest')`, which works through Node's require(esm)
+   with `require('@johnanthonyeletto/nestjs-inertia')`, which works through Node's require(esm)
    support (Node 22.12 or later) and the workspace symlink in the root
-   `node_modules` (the root `package.json` lists `inertia-nest: workspace:*` for this).
+   `node_modules` (the root `package.json` lists `@johnanthonyeletto/nestjs-inertia: workspace:*` for this).
    Page assembly is the same as upstream's: the component name, URL, version,
    the metadata the route computed, the `alwaysProps` merge and every HTML
    template branch. The protocol engine runs through the adapter:
@@ -60,7 +60,7 @@ The run swaps it without changing a file in the checkout:
    Run `diff conformance/inertia/tests/app/helpers.js conformance/helpers.cjs`
    to see every change.
 3. **`run.sh [react|vue3|svelte] [playwright args…]`** does the following:
-   1. Builds `inertia-nest`, so a stale `dist/` can't be tested by mistake.
+   1. Builds `@johnanthonyeletto/nestjs-inertia`, so a stale `dist/` can't be tested by mistake.
    2. Shallow-fetches `inertiajs/inertia` at the pinned tag into
       `conformance/inertia/` (ignored by git) and checks the commit sha.
    3. Installs and builds the upstream monorepo and the framework test app with
@@ -88,7 +88,7 @@ green run on its own proves nothing. Playwright pipes the web server's stderr
 into the run output, and every valid run contains this line:
 
 ```
-[WebServer] [conformance] helpers swapped -> …/conformance/helpers.cjs (inertia-nest: …/packages/nestjs-inertia/dist/index.js)
+[WebServer] [conformance] helpers swapped -> …/conformance/helpers.cjs (@johnanthonyeletto/nestjs-inertia: …/packages/nestjs-inertia/dist/index.js)
 ```
 
 ## What is and isn't covered
@@ -140,7 +140,7 @@ changes. Set `CONFORMANCE_NO_EXCLUSIONS=1` to run them.
 
 Every excluded test **passes against upstream's own `helpers.js`**
 (`CONFORMANCE_BASELINE=1`). These are not flakes, and not bugs in the client
-or the suite. They test behaviour of the reference server that `inertia-nest`
+or the suite. They test behaviour of the reference server that `@johnanthonyeletto/nestjs-inertia`
 deliberately does not copy, because the adapter follows inertia-laravel. In
 both cases the protocol doesn't require the reference server's behaviour.
 
@@ -174,7 +174,7 @@ so the resolver sees exactly what a route handler would give it.
 The client reloads with `except: ['auth.notifications']`. The reference server
 filters top-level keys only, and drops a key whenever an except entry equals it
 or lives under it. Here that means the whole `auth` prop is dropped, so the
-client keeps its old `auth.token`. `inertia-nest` follows Laravel semantics: it
+client keeps its old `auth.token`. `@johnanthonyeletto/nestjs-inertia` follows Laravel semantics: it
 keeps `auth` and drops only the `auth.notifications` child (see
 `pathMatchesPartialRequest` and `matchesExcept` in `src/props-resolver.ts:171`
 and `:332`). The route's new `auth.token` reaches the client, and the test fails

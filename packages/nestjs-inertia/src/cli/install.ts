@@ -151,7 +151,7 @@ export async function install(options: InstallOptions = {}): Promise<number> {
     [
       "     import { APP_FILTER } from '@nestjs/core'",
       "     import session from 'express-session'",
-      "     import { InertiaExceptionFilter, InertiaModule } from 'inertia-nest'",
+      "     import { InertiaExceptionFilter, InertiaModule } from '@johnanthonyeletto/nestjs-inertia'",
       "     import { HandleInertiaRequests } from './inertia/handle-inertia-requests.js'",
       "     import { HomeController } from './home.controller.js'",
       '',

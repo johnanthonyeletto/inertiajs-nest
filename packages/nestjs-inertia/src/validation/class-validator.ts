@@ -1,5 +1,5 @@
 /**
- * class-validator integration (`inertia-nest/validation/class-validator`).
+ * class-validator integration (`@johnanthonyeletto/nestjs-inertia/validation/class-validator`).
  * Requires the optional peer dependencies `class-validator` and `class-transformer`.
  */
 import type { HttpException } from '@nestjs/common'

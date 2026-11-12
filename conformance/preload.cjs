@@ -2,7 +2,7 @@
  * Node preload (`NODE_OPTIONS=--require`) for the conformance run.
  *
  * Redirects the upstream test server's `require('./helpers')` to
- * conformance/helpers.cjs, the transport port backed by `inertia-nest`, without
+ * conformance/helpers.cjs, the transport port backed by `@johnanthonyeletto/nestjs-inertia`, without
  * modifying a single file in the inertiajs/inertia checkout. Every other module
  * resolves normally, so in the Playwright runner, pnpm and Vite processes (which
  * also inherit NODE_OPTIONS) this hook is a no-op.

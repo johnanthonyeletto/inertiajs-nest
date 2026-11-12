@@ -1,9 +1,9 @@
 /**
- * Vite integration (`inertia-nest/vite`). Use it next to `@inertiajs/vite`:
+ * Vite integration (`@johnanthonyeletto/nestjs-inertia/vite`). Use it next to `@inertiajs/vite`:
  *
  * ```ts
  * import inertia from '@inertiajs/vite'
- * import nestInertia from 'inertia-nest/vite'
+ * import nestInertia from '@johnanthonyeletto/nestjs-inertia/vite'
  *
  * export default defineConfig({
  *   plugins: [inertia(), react(), nestInertia({ input: 'resources/js/app.tsx' })],
@@ -46,7 +46,7 @@ export default function nestInertia(options: NestInertiaPluginOptions = {}): Plu
   }
 
   return {
-    name: 'inertia-nest',
+    name: 'nestjs-inertia',
 
     config(config, { command, isSsrBuild }): UserConfig {
       const ssr = Boolean(isSsrBuild ?? config.build?.ssr)

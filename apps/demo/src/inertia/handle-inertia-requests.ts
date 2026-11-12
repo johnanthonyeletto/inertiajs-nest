@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import type { Request } from 'express'
-import { InertiaMiddleware, type RootViewContext, inertiaBody, inertiaHead } from 'inertia-nest'
+import { InertiaMiddleware, type RootViewContext, inertiaBody, inertiaHead } from '@johnanthonyeletto/nestjs-inertia'
 import { APP_NAME } from './inertia.config.js'
 
 @Injectable()

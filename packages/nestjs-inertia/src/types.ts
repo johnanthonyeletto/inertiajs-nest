@@ -2,7 +2,7 @@
  * Protocol types, importable from both server and client code:
  *
  * ```ts
- * import type { Page, SharedProps } from 'inertia-nest/types'
+ * import type { Page, SharedProps } from '@johnanthonyeletto/nestjs-inertia/types'
  * ```
  *
  * This module has no runtime code.
@@ -49,7 +49,7 @@ export interface Page<TProps extends PageProps = PageProps> extends PageMetadata
  * Augment to type the props shared with every page:
  *
  * ```ts
- * declare module 'inertia-nest/types' {
+ * declare module '@johnanthonyeletto/nestjs-inertia/types' {
  *   interface SharedProps {
  *     auth: { user: { id: number; name: string } | null }
  *   }
@@ -64,7 +64,7 @@ export interface SharedProps {}
  * the props passed for that component:
  *
  * ```ts
- * declare module 'inertia-nest/types' {
+ * declare module '@johnanthonyeletto/nestjs-inertia/types' {
  *   interface InertiaPages {
  *     'Users/Show': { user: User; stats: Stats }
  *   }

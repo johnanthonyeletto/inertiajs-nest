@@ -29,7 +29,7 @@ class TestingModule implements NestModule {
   }
 }
 
-describe('inertia-nest/testing', () => {
+describe('@johnanthonyeletto/nestjs-inertia/testing', () => {
   let app: INestApplication
 
   beforeAll(async () => {

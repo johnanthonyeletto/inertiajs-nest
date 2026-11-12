@@ -13,7 +13,7 @@ Phases 1–4 are implemented, except for the publishing steps. Phase 5 and the "
 | 3. Developer experience | Done. `./testing`, `./vite`, the `nestjs-inertia` CLI (`install`, `ssr:start\|stop\|check`), README, and ADRs in `docs/adr/`. Verified by packing the tarball and taking a fresh Nest 12 app from `install` to an SSR-rendered page, on Nest 12.4 and 12.0. |
 | 4. Conformance and release | Conformance harness, Laravel test ports, and CI are done. **Not done (deferred):** changesets, changelog, npm publish with provenance. The package keeps `"private": true` and the working name `inertia-nest` until the name (Decision 3) is settled. |
 
-How the decisions were resolved for now: 1, build our own (A); 4, Nest 12 only, ESM only, Express; 5, keep Precognition behind a validator interface. Decisions 2 (public or private) and 3 (name) are still open and only matter at publish time.
+How the decisions were resolved for now: 1, build our own (A); 4, Nest 12 only, ESM only, Express; 5, keep Precognition behind a validator interface. Decisions 2 and 3 are settled in [distribution-plan.md](distribution-plan.md): public, published as `@johnanthonyeletto/nestjs-inertia`, which also replaces the publishing part of Phase 4.
 
 ## Summary
 

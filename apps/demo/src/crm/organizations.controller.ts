@@ -4,7 +4,7 @@ import { Op, type WhereOptions } from 'sequelize'
 import { AuthGuard } from '../auth/auth.js'
 import { Contact, Organization } from '../database/models/index.js'
 import { paginate } from '../database/paginator.js'
-import { Inertia, type InertiaContext } from 'inertia-nest'
+import { Inertia, type InertiaContext } from '@johnanthonyeletto/nestjs-inertia'
 import { FiltersDto, OrganizationDto } from './dto.js'
 import { serializeContact, serializeOrganization } from './serializers.js'
 

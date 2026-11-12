@@ -2,7 +2,7 @@ import { Controller, Delete, Get, Patch, Post, Put, Query, Req, UseGuards } from
 import type { Request } from 'express'
 import { AuthGuard } from '../auth/auth.js'
 import { now, randomInt, sleep } from '../common/time.js'
-import { EncryptHistory, Inertia, type InertiaContext } from 'inertia-nest'
+import { EncryptHistory, Inertia, type InertiaContext } from '@johnanthonyeletto/nestjs-inertia'
 
 @Controller('features')
 @UseGuards(AuthGuard)

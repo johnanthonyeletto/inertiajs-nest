@@ -1,5 +1,5 @@
 /**
- * Testing helpers (`inertia-nest/testing`), modelled on inertia-laravel's
+ * Testing helpers (`@johnanthonyeletto/nestjs-inertia/testing`), modelled on inertia-laravel's
  * `assertInertia()`. They work with any HTTP client that exposes headers and
  * the response text or body (supertest, light-my-request, `fetch` results
  * after reading the text) and throw plain `AssertionError`s, so they work
