@@ -134,6 +134,75 @@ describe('live props over HTTP', () => {
       expect(next).not.toHaveProperty('flash')
       expect(next.props.errors).toEqual({})
     })
+
+    describe('after a form submission with `only`', () => {
+      // `router.post(url, data, { only: ['alert'] })`: the POST and the GET the
+      // browser follows its redirect with both carry these partial headers.
+      const submissionHeaders = liveReload('Alerts/Show', 'alert')
+
+      async function submissionApp() {
+        const session = {}
+        const app = await createApp({
+          session,
+          routes: [
+            route('GET', '/alerts/42', ({ inertia }) =>
+              inertia.render('Alerts/Show', {
+                alert: () => ({ id: 42 }),
+                mirrors: Inertia.live(() => ['Synced'], { on: MirrorChanged, channel: alert42 }),
+              }),
+            ),
+            route('POST', '/alerts/42/status', ({ inertia }) =>
+              inertia
+                .withErrors({ status: 'Pick a Status.' })
+                .flash('message', 'Not saved')
+                .redirect('/alerts/42'),
+            ),
+          ],
+        })
+
+        return { ...app, session }
+      }
+
+      it('delivers its flash and errors in the partial reload its redirect leads to', async () => {
+        const { http } = await submissionApp()
+
+        const submitted = await http().post('/alerts/42/status').set(submissionHeaders)
+        const followed = (await http().get(submitted.headers.location).set(submissionHeaders)).body
+
+        expect(followed.props).toEqual({ errors: { status: 'Pick a Status.' }, alert: { id: 42 } })
+        expect(followed.flash).toEqual({ message: 'Not saved' })
+      })
+
+      it('leaves them for that reload when a live reload lands first', async () => {
+        const { http } = await submissionApp()
+
+        const submitted = await http().post('/alerts/42/status').set(submissionHeaders)
+        const live = (await http().get('/alerts/42').set(liveReload('Alerts/Show', 'mirrors'))).body
+        const followed = (await http().get(submitted.headers.location).set(submissionHeaders)).body
+
+        expect(live).not.toHaveProperty('flash')
+        expect(live.props.errors).toEqual({})
+        expect(followed.props.errors).toEqual({ status: 'Pick a Status.' })
+        expect(followed.flash).toEqual({ message: 'Not saved' })
+      })
+
+      it('lets only that one reload consume them', async () => {
+        const { http, session } = await submissionApp()
+
+        const submitted = await http().post('/alerts/42/status').set(submissionHeaders)
+        await http().get(submitted.headers.location).set(submissionHeaders)
+
+        expect(session).toEqual({})
+
+        await http().post('/alerts/42/status').set(submissionHeaders)
+        const first = (await http().get('/alerts/42').set(submissionHeaders)).body
+        const again = (await http().get('/alerts/42').set(submissionHeaders)).body
+
+        expect(first.flash).toEqual({ message: 'Not saved' })
+        expect(again).not.toHaveProperty('flash')
+        expect(again.props.errors).toEqual({})
+      })
+    })
   })
 
   it('exposes X-Socket-Id on the request', async () => {

@@ -170,7 +170,7 @@ return inertia.render('Alerts/Show', {
 - `Inertia.always()`, `Inertia.optional()`, `Inertia.once()` and `Inertia.defer()` props have a `.live()` method too, which may be called more than once. Merge props can't be live: `.live()` on a merge prop, and `.merge()` on a live one, throw.
 - Live props work in shared data. Pass closures, so a live reload runs only the props it asks for.
 
-A partial reload never consumes flash data, validation errors or history flags, whichever component it names, so a live reload landing between a redirect and the next page can't take them. That means a form submission that sets `only` gets its errors on the next full visit, not in the partial response: submit forms without `only`.
+Live, deferred and polling reloads never consume flash data, validation errors or history flags, whichever component they name, so one landing between a redirect and the page it leads to can't take them. A form submission sent with `only` or `except` still gets them: the adapter remembers where its redirect leads, and the partial reload that follows it consumes them as before.
 
 `inertia.socketId` is the `X-Socket-Id` header Inertia's client sends once a transport provides a socket id, so a broadcaster can skip the sender's own tab.
 
@@ -211,7 +211,7 @@ return inertia.clearHistory().redirect('/login')   // e.g. after logout
 
 Every redirect follows the protocol rules, including Nest's `@Redirect()`, `res.redirect()`, and redirects from guards. If a handler returns nothing for an Inertia visit, the adapter redirects back.
 
-Flash data appears in the page's `flash` field (`usePage().flash`, `router.on('flash')`), not in props, and isn't kept in history. Partial reloads leave flash data and validation errors in the session for the next full visit; see [Live props](#live-props).
+Flash data appears in the page's `flash` field (`usePage().flash`, `router.on('flash')`), not in props, and isn't kept in history. Partial reloads other than the one a form submission's redirect leads to leave flash data and validation errors in the session; see [Live props](#live-props).
 
 To encrypt history for a route or controller, use `@EncryptHistory()`. Use `inertia.encryptHistory()` for a single request, or `encryptHistory: true` in the config for every page.
 

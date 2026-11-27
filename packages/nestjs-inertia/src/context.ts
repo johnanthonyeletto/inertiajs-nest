@@ -4,6 +4,7 @@ import { Header } from './constants.js'
 import { sendVersionConflict } from './express.js'
 import type { InertiaHooks, InertiaManager } from './manager.js'
 import { AlwaysProp, OnceProp } from './props.js'
+import { mayConsumeOneTimeState } from './partial-reloads.js'
 import { PropsResolver } from './props-resolver.js'
 import { InertiaResponse } from './response.js'
 import { LocationResponse, RedirectResponse } from './responses.js'
@@ -37,6 +38,7 @@ export class InertiaContext {
   private versionOverride: string | null = null
   private encryptHistoryEnabled: boolean
   private ssrEnabled = true
+  private consumesOneTimeState: boolean | null = null
 
   constructor(
     readonly request: Request,
@@ -319,20 +321,11 @@ export class InertiaContext {
 
   /**
    * Flash data, validation errors and history flags belong to the next page
-   * the user visits. Prefetch responses are cached, so they never take them.
-   * Neither does any partial reload, whichever component it names: a live
-   * reload can land between a redirect and the page it leads to.
+   * the user visits: not to a prefetch, nor to a live, deferred or polling
+   * partial reload (see `partial-reloads.ts`). Decided once per request.
    */
   private get mayConsumeOneTimeState(): boolean {
-    return !this.isPrefetch && !this.isAnyPartialReload
-  }
-
-  private get isAnyPartialReload(): boolean {
-    return Boolean(
-      this.request.get(Header.PARTIAL_COMPONENT) ||
-        this.request.get(Header.PARTIAL_ONLY) ||
-        this.request.get(Header.PARTIAL_EXCEPT),
-    )
+    return (this.consumesOneTimeState ??= mayConsumeOneTimeState(this.request, this.session(false)))
   }
 
   /** The request's session; warns once when state is written without one. */

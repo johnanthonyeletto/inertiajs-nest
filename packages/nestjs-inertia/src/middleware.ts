@@ -4,6 +4,7 @@ import type { RootViewContext } from './config.js'
 import { Header, SEE_OTHER_METHODS } from './constants.js'
 import { isInertiaRequest, sendVersionConflict, varyOnSend } from './express.js'
 import { InertiaManager } from './manager.js'
+import { rememberRedirectedPartial } from './partial-reloads.js'
 import { runWithRequest } from './request-context.js'
 import { defaultRootView } from './root-view.js'
 import type { PageProps } from './types.js'
@@ -112,6 +113,8 @@ export class InertiaMiddleware implements NestMiddleware {
           response.status(409).set(Header.REDIRECT, url).end()
           return
         }
+
+        rememberRedirectedPartial(request, this.inertiaManager.session(request), url)
       }
 
       redirect(status, url)
