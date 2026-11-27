@@ -151,12 +151,14 @@ describe('live props over HTTP', () => {
                 mirrors: Inertia.live(() => ['Synced'], { on: MirrorChanged, channel: alert42 }),
               }),
             ),
-            route('POST', '/alerts/42/status', ({ inertia }) =>
+            route('POST', '/alerts/42/status', ({ inertia, req }) =>
               inertia
                 .withErrors({ status: 'Pick a Status.' })
                 .flash('message', 'Not saved')
-                .redirect('/alerts/42'),
+                .redirect(req.query.to === 'old' ? '/alerts/old-42' : '/alerts/42'),
             ),
+            // An old URL that redirects on, like a canonical or trailing-slash redirect.
+            route('GET', '/alerts/old-42', ({ inertia }) => inertia.redirect('/alerts/42')),
           ],
         })
 
@@ -184,6 +186,30 @@ describe('live props over HTTP', () => {
         expect(live.props.errors).toEqual({})
         expect(followed.props.errors).toEqual({ status: 'Pick a Status.' })
         expect(followed.flash).toEqual({ message: 'Not saved' })
+      })
+
+      it('follows the reload through a further redirect', async () => {
+        const { http } = await submissionApp()
+
+        const submitted = await http().post('/alerts/42/status?to=old').set(submissionHeaders)
+        const redirectedAgain = await http().get(submitted.headers.location).set(submissionHeaders)
+        const followed = (await http().get(redirectedAgain.headers.location).set(submissionHeaders)).body
+
+        expect(redirectedAgain.status).toBe(302)
+        expect(followed.props.errors).toEqual({ status: 'Pick a Status.' })
+        expect(followed.flash).toEqual({ message: 'Not saved' })
+      })
+
+      it('forgets the reload once a full visit takes the state instead', async () => {
+        const { http, session } = await submissionApp()
+
+        await http().post('/alerts/42/status').set(submissionHeaders)
+        await http().get('/alerts/42').set(inertiaHeaders)
+        Object.assign(session, { flash: { message: 'Flashed later' } })
+        const reload = (await http().get('/alerts/42').set(submissionHeaders)).body
+
+        expect(reload).not.toHaveProperty('flash')
+        expect(session).toEqual({ flash: { message: 'Flashed later' } })
       })
 
       it('lets only that one reload consume them', async () => {

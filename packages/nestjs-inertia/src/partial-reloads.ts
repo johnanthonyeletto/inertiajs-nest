@@ -24,16 +24,22 @@ export function partialReloadOf(request: Request): Omit<PartialReloadRequest, 'u
 /**
  * Called for every redirect of an Inertia request. When a form submission
  * (any method but GET) sent as a partial reload is redirected, remember the
- * reload its redirect leads to.
+ * reload its redirect leads to. When that reload is itself redirected (a
+ * guard, a canonical URL), follow it to the new location.
  */
 export function rememberRedirectedPartial(request: Request, session: InertiaSession | null, location: string): void {
   const partial = partialReloadOf(request)
 
-  if (!session || !partial || request.method === 'GET') {
+  if (!session || !partial) {
     return
   }
 
-  session.set('redirectedPartial', { url: pathOf(location, request.originalUrl), ...partial })
+  const isSubmission = request.method !== 'GET'
+  const expected = session.get('redirectedPartial')
+
+  if (isSubmission || (expected && isExpectedReload(request, partial, expected))) {
+    session.set('redirectedPartial', { url: pathOf(location, request.originalUrl), ...partial })
+  }
 }
 
 /**
@@ -56,19 +62,26 @@ export function mayConsumeOneTimeState(request: Request, session: InertiaSession
     return true
   }
 
-  if (
-    expected &&
-    expected.url === pathOf(request.originalUrl, request.originalUrl) &&
-    expected.component === partial.component &&
-    expected.only === partial.only &&
-    expected.except === partial.except
-  ) {
+  if (expected && isExpectedReload(request, partial, expected)) {
     session?.set('redirectedPartial', undefined)
 
     return true
   }
 
   return false
+}
+
+function isExpectedReload(
+  request: Request,
+  partial: Omit<PartialReloadRequest, 'url'>,
+  expected: PartialReloadRequest,
+): boolean {
+  return (
+    expected.url === pathOf(request.originalUrl, request.originalUrl) &&
+    expected.component === partial.component &&
+    expected.only === partial.only &&
+    expected.except === partial.except
+  )
 }
 
 /** The path and query a URL points at, resolved against the current request's. */
