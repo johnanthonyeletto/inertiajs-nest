@@ -12,7 +12,6 @@ export { InertiaMiddleware } from './middleware.js'
 export {
   AlwaysProp,
   DeferProp,
-  isLive,
   LiveProp,
   MergeProp,
   OnceProp,
@@ -20,7 +19,6 @@ export {
   Prop,
   props,
   ScrollProp,
-  supportsLiveUpdates,
   type LiveableProp,
   type LiveChannelInput,
   type LiveEvent,

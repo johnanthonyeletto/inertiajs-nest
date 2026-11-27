@@ -100,9 +100,12 @@ describe('live props over HTTP', () => {
       ['a live reload of the page', liveReload('Alerts/Show', 'mirrors')],
       ['a partial reload naming a different component', liveReload('Alerts/Index', 'alerts')],
       [
-        'a partial reload with only an except list',
+        'a partial reload with an except list',
         { ...inertiaHeaders, 'X-Inertia-Partial-Component': 'Alerts/Show', 'X-Inertia-Partial-Except': 'alert' },
       ],
+      // Each header counts on its own, without X-Inertia-Partial-Component.
+      ['a request with only X-Inertia-Partial-Data', { ...inertiaHeaders, 'X-Inertia-Partial-Data': 'mirrors' }],
+      ['a request with only X-Inertia-Partial-Except', { ...inertiaHeaders, 'X-Inertia-Partial-Except': 'alert' }],
     ])('survives %s, for the next full visit', async (_, headers) => {
       const session = flashed()
       const { http } = await alertApp(session)
