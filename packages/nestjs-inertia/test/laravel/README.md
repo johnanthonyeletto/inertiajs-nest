@@ -24,7 +24,7 @@ and `createApp()` + `route()` (a real Nest app with inline routes, like `Route::
 - `Middleware::shareOnce()` → `share()` returning `Inertia.once(...)` props.
 - `Session::put('errors', ViewErrorBag)` → seeding our session's `errors` (bag → field → messages).
 
-## Ported (252 source tests, all passing)
+## Ported (297 source tests, all passing)
 
 | Spec | Source | Ported |
 | --- | --- | ---: |
@@ -43,6 +43,7 @@ and `createApp()` + `route()` (a real Nest app with inline routes, like `Route::
 | `history.spec.ts` | `HistoryTest` | 9 |
 | `exception-response.spec.ts` | `ExceptionResponseTest` | 6 |
 | `component.spec.ts` | `ComponentTest` | 2 |
+| `live-prop.spec.ts` | `LivePropTest` (**v3.8.0**, which added live props) | 45 (42 cases) |
 
 Fixed after porting (each was found by these tests):
 
@@ -60,7 +61,7 @@ Fixed after porting (each was found by these tests):
 
 | Source | Reason |
 | --- | --- |
-| `BroadcastPropsTest`, `LivePropTest` | Live props / broadcasting: not implemented by this adapter. |
+| `BroadcastPropsTest` | Laravel broadcasting: the adapter emits the live-props protocol but includes no broadcaster. |
 | `DirectiveTest`, most of `ComponentTest` | Blade directives and components. |
 | `ServiceProviderTest`, `Commands/*` | Laravel service provider, config publishing, Artisan commands. |
 | `HttpGatewayTest`, `SsrRenderFailedTest` | SSR HTTP gateway internals. |
@@ -85,6 +86,10 @@ PHP-language concerns (no JS equivalent):
 - `PropsResolverTest::test_big_integers_are_not_wrapped_when_disabled`, `ResponseFactoryTest::test_big_integers_in_flash_data_are_untouched_when_disabled` —
   a JS `bigint` has no raw JSON form; without `preserveBigIntegers` the adapter rejects it by design (`src/serialization.ts`).
 - `ResponseTest::test_responsable_with_invalid_key` — PHP private-property key mangling (`\0*\0`).
+- `LivePropTest`: every test that reads an event's channels or name off a Laravel event (`broadcastOn()`,
+  `broadcastAs()`, enums, per-connection channels, broadcastable models, `newInstanceWithoutConstructor()`).
+  Here events are names or classes with a static `eventName`, and channels are always passed; two of our
+  own cases cover the errors for a missing channel and a class without an `eventName`.
 
 Laravel framework / API surface without an equivalent here:
 

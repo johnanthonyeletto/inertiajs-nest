@@ -19,6 +19,25 @@ export interface ScrollMetadata {
   currentPage: number | string | null
 }
 
+/** A channel as announced to the client: its unprefixed name and its type. */
+export interface LiveChannel {
+  name: string
+  type: 'public' | 'private' | 'presence' | 'encrypted-private'
+}
+
+/** The events on one channel that refresh a live prop. */
+export interface LiveListener {
+  channel: LiveChannel
+  events: string[]
+}
+
+/** A live prop's entry under the page's `liveProps`. */
+export interface LivePropMetadata {
+  listeners: LiveListener[]
+  /** Milliseconds between reloads. Omitted when the client's default applies. */
+  throttle?: number
+}
+
 /** Page-object fields describing how the client should treat individual props. */
 export interface PageMetadata {
   sharedProps?: string[]
@@ -30,6 +49,7 @@ export interface PageMetadata {
   rescuedProps?: string[]
   scrollProps?: Record<string, ScrollMetadata & { reset: boolean }>
   onceProps?: Record<string, { prop: string; expiresAt: number | null }>
+  liveProps?: Record<string, LivePropMetadata>
 }
 
 /** The page object exchanged between the server and the Inertia client. */

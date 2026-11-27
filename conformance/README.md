@@ -228,6 +228,11 @@ puts a `pnpm@11.5.3` shim (through npx) first on `PATH`. This repo itself pins
 pnpm 11.5.3 (`packageManager`), which CI installs, so the shim is only a
 fallback for older local installs.
 
+Run it from a checkout whose path has no segment starting with a dot (not
+under `~/.paseo/`, for example). Upstream's test server serves the built
+client with Express's `res.sendFile()`, which refuses such paths by default, so
+every page loads blank and every test fails, in baseline mode too.
+
 The Conformance workflow runs on every push to `master`. It can also be
 started manually, with optional `baseline`, `inertia_ref` and
 `playwright_args` inputs for triage. It runs on `ubuntu-24.04`, because the

@@ -5,9 +5,30 @@
  * once, scroll) can be expressed and freely composed.
  */
 
-import type { ScrollMetadata } from './types.js'
+import type { LiveChannel, LiveListener, LivePropMetadata, ScrollMetadata } from './types.js'
 
-export type { ScrollMetadata }
+export type { LiveChannel, LiveListener, LivePropMetadata, ScrollMetadata }
+
+/** An event class: any class with a static `eventName`, which is what the client listens for. */
+export type LiveEventClass = (abstract new (...args: any[]) => unknown) & { readonly eventName: string }
+
+/** An event a live prop listens for: its literal name, or a class with a static `eventName`. */
+export type LiveEvent = string | LiveEventClass
+
+/**
+ * A channel: a bare name (a public channel, as in Laravel), or a name and a
+ * type, e.g. `{ name: 'orders.1', type: 'private' }`. Names are unprefixed.
+ */
+export type LiveChannelInput = string | LiveChannel
+
+export interface LiveOptions {
+  /** The event, or events, that refresh the prop. At least one is required. */
+  on: LiveEvent | LiveEvent[]
+  /** The channel, or channels, those events arrive on. */
+  channel?: LiveChannelInput | LiveChannelInput[]
+  /** Milliseconds between reloads of the prop. Defaults to the client's. */
+  throttle?: number
+}
 
 export type Resolvable<T> = T | Promise<T> | (() => T | Promise<T>)
 
@@ -37,6 +58,21 @@ const MERGEABLE = Symbol('inertia.mergeable')
 const ONCEABLE = Symbol('inertia.onceable')
 const RESCUABLE = Symbol('inertia.rescuable')
 const IGNORE_FIRST_LOAD = Symbol('inertia.ignoreFirstLoad')
+const LIVE = Symbol('inertia.live')
+
+const MERGE_CANNOT_BE_LIVE = 'Live updates are not supported on merge properties.'
+
+interface LiveDeclaration {
+  events: LiveEvent[]
+  channels: LiveChannelInput[]
+}
+
+interface LiveState {
+  live: boolean
+  /** One entry per `live()` call, so an explicit channel only applies to its own events. */
+  declarations: LiveDeclaration[]
+  throttle: number | null
+}
 
 interface DeferState {
   deferred: boolean
@@ -107,6 +143,15 @@ export interface IgnoreFirstLoadProp extends Prop {
   readonly [IGNORE_FIRST_LOAD]: true
 }
 
+/** Props that can be refreshed by events (`SupportsLiveUpdates` in inertia-laravel). */
+export interface LiveableProp extends Prop {
+  readonly [LIVE]: LiveState
+  live(options: LiveOptions): this
+  isLive(): boolean
+  liveListeners(): LiveListener[]
+  liveThrottle(): number | null
+}
+
 export const isDeferrable = (value: unknown): value is DeferrableProp =>
   value instanceof Prop && DEFERRABLE in value
 export const isMergeable = (value: unknown): value is MergeableProp =>
@@ -117,6 +162,10 @@ export const isRescuable = (value: unknown): value is RescuableProp =>
   value instanceof Prop && RESCUABLE in value
 export const ignoresFirstLoad = (value: unknown): value is IgnoreFirstLoadProp =>
   value instanceof Prop && IGNORE_FIRST_LOAD in value
+export const supportsLiveUpdates = (value: unknown): value is LiveableProp =>
+  value instanceof Prop && LIVE in value
+/** The prop was marked live, so it announces its listeners under `liveProps`. */
+export const isLive = (value: unknown): value is LiveableProp => supportsLiveUpdates(value) && value.isLive()
 
 function Deferrable<TBase extends PropConstructor>(Base: TBase) {
   abstract class Deferrable extends Base implements DeferrableProp {
@@ -154,6 +203,11 @@ function Mergeable<TBase extends PropConstructor>(Base: TBase) {
 
     /** Merge the incoming value with the client's value instead of replacing it. */
     merge(): this {
+      // Guarded from both sides, since the order the two are called in is the author's to choose.
+      if (isLive(this)) {
+        throw new Error(MERGE_CANNOT_BE_LIVE)
+      }
+
       this[MERGEABLE].merging = true
       return this
     }
@@ -302,8 +356,118 @@ function Onceable<TBase extends PropConstructor>(Base: TBase) {
   return Onceable
 }
 
+/** A port of inertia-laravel's `HasLiveUpdates`: its output and error messages match. */
+function Live<TBase extends PropConstructor>(Base: TBase) {
+  abstract class Live extends Base implements LiveableProp {
+    readonly [LIVE]: LiveState = { live: false, declarations: [], throttle: null }
+
+    /**
+     * Refresh the prop with a partial reload whenever one of the given events
+     * arrives on one of the given channels. May be called more than once; each
+     * call's channels apply only to its own events. Merge props can't be live.
+     */
+    live(options: LiveOptions): this {
+      if (isMergeable(this) && this.shouldMerge()) {
+        throw new Error(MERGE_CANNOT_BE_LIVE)
+      }
+
+      const state = this[LIVE]
+      state.live = true
+      state.declarations.push({ events: wrap(options.on), channels: wrap(options.channel) })
+
+      if (options.throttle !== undefined) {
+        state.throttle = options.throttle
+      }
+
+      return this
+    }
+
+    isLive(): boolean {
+      return this[LIVE].live
+    }
+
+    liveThrottle(): number | null {
+      return this[LIVE].throttle
+    }
+
+    /** The listeners announced under `liveProps`, one per channel, events in declaration order. */
+    liveListeners(): LiveListener[] {
+      const { declarations } = this[LIVE]
+
+      if (!declarations.some((declaration) => declaration.events.length > 0)) {
+        throw new Error('A live property must listen for at least one event. Pass the event to the [on] argument.')
+      }
+
+      const listeners = new Map<string, LiveListener>()
+
+      for (const declaration of declarations) {
+        for (const event of declaration.events) {
+          const eventName = resolveEventName(event)
+
+          if (declaration.channels.length === 0) {
+            throw new Error(missingChannelMessage(event))
+          }
+
+          for (const input of declaration.channels) {
+            const channel = resolveChannel(input)
+            const key = `${channel.type}:${channel.name}`
+            const listener = listeners.get(key) ?? { channel, events: [] }
+
+            if (!listener.events.includes(eventName)) {
+              listener.events.push(eventName)
+            }
+
+            listeners.set(key, listener)
+          }
+        }
+      }
+
+      return [...listeners.values()]
+    }
+  }
+
+  return Live
+}
+
+function wrap<T>(value: T | T[] | undefined): T[] {
+  if (value === undefined) return []
+
+  return Array.isArray(value) ? [...value] : [value]
+}
+
+function resolveEventName(event: LiveEvent): string {
+  if (typeof event === 'string') {
+    return event
+  }
+
+  if (typeof event.eventName !== 'string' || event.eventName === '') {
+    throw new Error(
+      `The [${event.name}] event class does not define a static [eventName]. ` +
+        'Pass an event class with a static [eventName], or its event name as a string.',
+    )
+  }
+
+  return event.eventName
+}
+
+/**
+ * Laravel reads an event's channels off its `broadcastOn()`. A JavaScript
+ * class can't be built without its payload safely, so channels are always
+ * passed explicitly; the message keeps Laravel's wording.
+ */
+function missingChannelMessage(event: LiveEvent): string {
+  const [name, kind] = typeof event === 'string' ? [event, 'a string'] : [event.name, 'a class']
+
+  return `Unable to resolve the channels for the [${name}] event because it was given as ${kind}. Pass the [channel] argument.`
+}
+
+/** A bare string is a public channel, as in Laravel. Names are used as given, never prefixed. */
+function resolveChannel(channel: LiveChannelInput): LiveChannel {
+  return typeof channel === 'string' ? { name: channel, type: 'public' } : { name: channel.name, type: channel.type }
+}
+
 /** Always included, even when a partial reload filters it out. */
-export class AlwaysProp extends Prop {
+export class AlwaysProp extends Live(Prop) {
   constructor(protected readonly value: unknown) {
     super()
   }
@@ -314,7 +478,7 @@ export class AlwaysProp extends Prop {
 }
 
 /** Never included on full visits; only resolved when a partial reload asks for it. */
-export class OptionalProp extends Onceable(Prop) implements IgnoreFirstLoadProp {
+export class OptionalProp extends Live(Onceable(Prop)) implements IgnoreFirstLoadProp {
   readonly [IGNORE_FIRST_LOAD] = true as const
 
   constructor(protected readonly callback: () => unknown) {
@@ -328,7 +492,7 @@ export class OptionalProp extends Onceable(Prop) implements IgnoreFirstLoadProp 
 
 /** Announced on full visits and loaded by the client in a follow-up request. */
 export class DeferProp
-  extends Onceable(Mergeable(Deferrable(Prop)))
+  extends Live(Onceable(Mergeable(Deferrable(Prop))))
   implements IgnoreFirstLoadProp, RescuableProp
 {
   readonly [IGNORE_FIRST_LOAD] = true as const
@@ -365,7 +529,7 @@ export class MergeProp extends Onceable(Mergeable(Prop)) {
 }
 
 /** Resolved once, then remembered by the client across visits. */
-export class OnceProp extends Onceable(Prop) {
+export class OnceProp extends Live(Onceable(Prop)) {
   constructor(protected readonly callback: () => unknown) {
     super()
     this.once()
@@ -373,6 +537,24 @@ export class OnceProp extends Onceable(Prop) {
 
   resolve(): Promise<unknown> {
     return resolveCallable(this.callback)
+  }
+}
+
+/**
+ * Refreshed with a partial reload whenever one of its events arrives. Pass a
+ * closure so a reload of other props never runs this one's query.
+ */
+export class LiveProp extends Live(Prop) {
+  constructor(
+    protected readonly value: unknown,
+    options: LiveOptions,
+  ) {
+    super()
+    this.live(options)
+  }
+
+  resolve(): Promise<unknown> {
+    return resolveCallable(this.value)
   }
 }
 
@@ -444,12 +626,14 @@ export function isPropType(value: unknown): value is Prop {
     isDeferrable(value) ||
     ignoresFirstLoad(value) ||
     isMergeable(value) ||
-    isOnceable(value)
+    isOnceable(value) ||
+    supportsLiveUpdates(value)
   )
 }
 
 /** Factories mirroring `Inertia::always()`, `Inertia::defer()`, etc. */
 export const props = {
+  live: (value: unknown, options: LiveOptions) => new LiveProp(value, options),
   always: (value: unknown) => new AlwaysProp(value),
   optional: (callback: () => unknown) => new OptionalProp(callback),
   defer: (callback: () => unknown, group: string | null = null, options: { rescue?: boolean } = {}) =>

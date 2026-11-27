@@ -26,6 +26,11 @@ export const Header = {
   INFINITE_SCROLL_MERGE_INTENT: 'X-Inertia-Infinite-Scroll-Merge-Intent',
   /** Comma-separated once-prop keys the client already holds. */
   EXCEPT_ONCE_PROPS: 'X-Inertia-Except-Once-Props',
+  /**
+   * The browser's live-transport connection, sent by Inertia's client once a
+   * transport provides one, so a broadcaster can skip the sender (`toOthers`).
+   */
+  SOCKET_ID: 'X-Socket-Id',
   /** `prefetch` for prefetch requests. */
   PURPOSE: 'Purpose',
   /** Marks a Precognition (validation-only) request and response. */

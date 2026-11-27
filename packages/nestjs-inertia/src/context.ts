@@ -60,6 +60,14 @@ export class InertiaContext {
     return this.request.precognitive === true
   }
 
+  /**
+   * The id of the browser's live-transport connection (`X-Socket-Id`), or
+   * `null`. Pass it to a broadcaster so the sender's own tab is skipped.
+   */
+  get socketId(): string | null {
+    return this.request.get(Header.SOCKET_ID) || null
+  }
+
   /** Whether this is a partial reload of the given component. */
   isPartialReloadOf(component: string): boolean {
     return this.request.get(Header.PARTIAL_COMPONENT) === component
@@ -260,8 +268,7 @@ export class InertiaContext {
   private resolveValidationErrors(): Record<string, unknown> {
     const session = this.session(false)
 
-    // Prefetch responses are cached, so they must not consume one-time state.
-    const errors = session && !this.isPrefetch ? session.pull('errors') : undefined
+    const errors = session && this.mayConsumeOneTimeState ? session.pull('errors') : undefined
 
     if (!errors) {
       return {}
@@ -291,7 +298,7 @@ export class InertiaContext {
   private pullFlashed(): Record<string, unknown> | null {
     const session = this.session(false)
 
-    if (!session || this.isPrefetch) {
+    if (!session || !this.mayConsumeOneTimeState) {
       return null
     }
 
@@ -303,11 +310,29 @@ export class InertiaContext {
   private pullSessionFlag(flag: 'clearHistory' | 'preserveFragment'): boolean {
     const session = this.session(false)
 
-    if (!session || this.isPrefetch) {
+    if (!session || !this.mayConsumeOneTimeState) {
       return false
     }
 
     return session.pull(flag) === true
+  }
+
+  /**
+   * Flash data, validation errors and history flags belong to the next page
+   * the user visits. Prefetch responses are cached, so they never take them.
+   * Neither does any partial reload, whichever component it names: a live
+   * reload can land between a redirect and the page it leads to.
+   */
+  private get mayConsumeOneTimeState(): boolean {
+    return !this.isPrefetch && !this.isAnyPartialReload
+  }
+
+  private get isAnyPartialReload(): boolean {
+    return Boolean(
+      this.request.get(Header.PARTIAL_COMPONENT) ||
+        this.request.get(Header.PARTIAL_ONLY) ||
+        this.request.get(Header.PARTIAL_EXCEPT),
+    )
   }
 
   /** The request's session; warns once when state is written without one. */
