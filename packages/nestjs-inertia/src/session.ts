@@ -10,6 +10,19 @@ export interface InertiaSessionData {
   clearHistory?: boolean
   /** Keep the URL fragment across the next redirect. */
   preserveFragment?: boolean
+  /**
+   * The partial reload a redirected form submission (sent with `only` or
+   * `except`) leads to. Unlike other partial reloads, it takes one-time state.
+   */
+  redirectedPartial?: PartialReloadRequest
+}
+
+/** A partial reload: the path and query it requests, and its partial-reload headers. */
+export interface PartialReloadRequest {
+  url: string
+  component: string | null
+  only: string | null
+  except: string | null
 }
 
 /** Per-request access to wherever Inertia's one-time state is kept. */

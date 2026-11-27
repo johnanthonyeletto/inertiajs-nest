@@ -1,6 +1,6 @@
 {
   "name": "@johnanthonyeletto/nestjs-inertia",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Inertia.js v3 server-side adapter for NestJS",
   "author": "John Eletto",
   "repository": {
@@ -17,7 +17,8 @@
     "nest",
     "adapter",
     "ssr",
-    "precognition"
+    "precognition",
+    "live-props"
   ],
   "license": "MIT",
   "type": "module",

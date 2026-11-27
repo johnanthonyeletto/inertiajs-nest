@@ -4,6 +4,7 @@ import { Header } from './constants.js'
 import { sendVersionConflict } from './express.js'
 import type { InertiaHooks, InertiaManager } from './manager.js'
 import { AlwaysProp, OnceProp } from './props.js'
+import { mayConsumeOneTimeState } from './partial-reloads.js'
 import { PropsResolver } from './props-resolver.js'
 import { InertiaResponse } from './response.js'
 import { LocationResponse, RedirectResponse } from './responses.js'
@@ -37,6 +38,7 @@ export class InertiaContext {
   private versionOverride: string | null = null
   private encryptHistoryEnabled: boolean
   private ssrEnabled = true
+  private consumesOneTimeState: boolean | null = null
 
   constructor(
     readonly request: Request,
@@ -58,6 +60,14 @@ export class InertiaContext {
 
   get isPrecognitive(): boolean {
     return this.request.precognitive === true
+  }
+
+  /**
+   * The id of the browser's live-transport connection (`X-Socket-Id`), or
+   * `null`. Pass it to a broadcaster so the sender's own tab is skipped.
+   */
+  get socketId(): string | null {
+    return this.request.get(Header.SOCKET_ID) || null
   }
 
   /** Whether this is a partial reload of the given component. */
@@ -260,8 +270,7 @@ export class InertiaContext {
   private resolveValidationErrors(): Record<string, unknown> {
     const session = this.session(false)
 
-    // Prefetch responses are cached, so they must not consume one-time state.
-    const errors = session && !this.isPrefetch ? session.pull('errors') : undefined
+    const errors = session && this.mayConsumeOneTimeState ? session.pull('errors') : undefined
 
     if (!errors) {
       return {}
@@ -291,7 +300,7 @@ export class InertiaContext {
   private pullFlashed(): Record<string, unknown> | null {
     const session = this.session(false)
 
-    if (!session || this.isPrefetch) {
+    if (!session || !this.mayConsumeOneTimeState) {
       return null
     }
 
@@ -303,11 +312,20 @@ export class InertiaContext {
   private pullSessionFlag(flag: 'clearHistory' | 'preserveFragment'): boolean {
     const session = this.session(false)
 
-    if (!session || this.isPrefetch) {
+    if (!session || !this.mayConsumeOneTimeState) {
       return false
     }
 
     return session.pull(flag) === true
+  }
+
+  /**
+   * Flash data, validation errors and history flags belong to the next page
+   * the user visits: not to a prefetch, nor to a live, deferred or polling
+   * partial reload (see `partial-reloads.ts`). Decided once per request.
+   */
+  private get mayConsumeOneTimeState(): boolean {
+    return (this.consumesOneTimeState ??= mayConsumeOneTimeState(this.request, this.session(false)))
   }
 
   /** The request's session; warns once when state is written without one. */

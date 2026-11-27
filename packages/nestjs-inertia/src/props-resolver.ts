@@ -4,6 +4,7 @@ import {
   AlwaysProp,
   ignoresFirstLoad,
   isDeferrable,
+  isLive,
   isMergeable,
   isOnceable,
   isPropType,
@@ -12,10 +13,11 @@ import {
   resolveCallable,
   ScrollProp,
   type DeferrableProp,
+  type LiveableProp,
   type MergeableProp,
 } from './props.js'
 import { copyContainer, isContainer, isInertiaRequest, setPath } from './support.js'
-import type { PageMetadata, PageProps, ScrollMetadata } from './types.js'
+import type { LivePropMetadata, PageMetadata, PageProps, ScrollMetadata } from './types.js'
 
 export type { PageMetadata, PageProps }
 
@@ -51,6 +53,7 @@ export class PropsResolver {
   private readonly matchPropsOn: string[] = []
   private readonly scrollProps: Record<string, ScrollMetadata & { reset: boolean }> = {}
   private readonly onceProps: Record<string, { prop: string; expiresAt: number | null }> = {}
+  private readonly liveProps: Record<string, LivePropMetadata> = {}
   private sharedPropKeys: string[] = []
 
   constructor(
@@ -90,6 +93,7 @@ export class PropsResolver {
       rescuedProps: this.rescuedProps,
       scrollProps: this.scrollProps,
       onceProps: this.onceProps,
+      liveProps: this.liveProps,
     }
 
     return Object.fromEntries(
@@ -141,7 +145,7 @@ export class PropsResolver {
         }
       }
 
-      await this.collectMetadata(current, path)
+      await this.collectMetadata(current, path, parentWasResolved)
 
       // Children of a value produced by a callback (rather than a literal
       // object or array) are already resolved, so they bypass partial filtering.
@@ -181,6 +185,11 @@ export class PropsResolver {
   }
 
   private excludeFromInitialResponse(prop: unknown, path: string): boolean {
+    // Excluding a prop from the initial response never removes its live listeners.
+    if (isLive(prop)) {
+      this.collectLiveMetadata(path, prop, false)
+    }
+
     // Optional and deferred props are never sent on a full visit, but still
     // contribute deferred, merge, and once metadata for the client.
     if (ignoresFirstLoad(prop)) {
@@ -255,7 +264,7 @@ export class PropsResolver {
     }
   }
 
-  private async collectMetadata(prop: unknown, path: string): Promise<void> {
+  private async collectMetadata(prop: unknown, path: string, parentWasResolved: boolean): Promise<void> {
     if (isMergeable(prop) && prop.shouldMerge()) {
       this.collectMergeableMetadata(path, prop)
     }
@@ -268,6 +277,27 @@ export class PropsResolver {
     }
 
     this.collectOnceMetadata(path, prop)
+
+    if (isLive(prop)) {
+      this.collectLiveMetadata(path, prop, parentWasResolved)
+    }
+  }
+
+  /**
+   * Emitted on every response, so a partial reload keeps the listeners it
+   * refreshed up to date. Props resolved outside the partial filter (always
+   * props, children of a resolved value) are sent, so their listeners are too.
+   */
+  private collectLiveMetadata(path: string, prop: LiveableProp, parentWasResolved: boolean): void {
+    const bypassesPartialFiltering = prop instanceof AlwaysProp || parentWasResolved
+
+    if (this.isPartial && !bypassesPartialFiltering && !this.isIncludedInPartialMetadata(path)) {
+      return
+    }
+
+    const throttle = prop.liveThrottle()
+
+    this.liveProps[path] = { listeners: prop.liveListeners(), ...(throttle !== null && { throttle }) }
   }
 
   private collectDeferredPropMetadata(path: string, prop: DeferrableProp): void {

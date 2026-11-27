@@ -12,12 +12,18 @@ export { InertiaMiddleware } from './middleware.js'
 export {
   AlwaysProp,
   DeferProp,
+  LiveProp,
   MergeProp,
   OnceProp,
   OptionalProp,
   Prop,
   props,
   ScrollProp,
+  type LiveableProp,
+  type LiveChannelInput,
+  type LiveEvent,
+  type LiveEventClass,
+  type LiveOptions,
   type ProvidesScrollMetadata,
 } from './props.js'
 export { PropsResolver, type PropsResolverOptions } from './props-resolver.js'
@@ -37,6 +43,9 @@ export { SsrGateway, type SsrError, type SsrResult } from './ssr.js'
 export type {
   ComponentProps,
   InertiaPages,
+  LiveChannel,
+  LiveListener,
+  LivePropMetadata,
   Page,
   PageMetadata,
   PageProps,

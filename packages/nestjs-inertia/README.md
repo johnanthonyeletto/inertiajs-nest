@@ -2,7 +2,7 @@
 
 An [Inertia.js](https://inertiajs.com) v3 server-side adapter for [NestJS](https://nestjs.com). Build single-page apps with React, Vue, or Svelte while keeping NestJS controllers, guards, pipes, and routing, without a separate API.
 
-- **Complete v3 protocol.** Covers partial reloads, every prop type, flash data, fragment redirects, history encryption, Precognition, and big integers. See the [coverage table](#protocol-coverage).
+- **Complete v3 protocol.** Covers partial reloads, every prop type (including live props), flash data, fragment redirects, history encryption, Precognition, and big integers. See the [coverage table](#protocol-coverage).
 - **Verified.** Tested against the official `inertiajs/inertia` Playwright suite (see `conformance/` in the repository) and against cases ported from inertia-laravel's test suite.
 - **Built on the official tooling.** Uses `@inertiajs/vite` for page resolution and SSR, plus a small companion plugin.
 - **Shaped like the official adapters.** You get a middleware class to extend, a root-template helper, SSR commands, and testing assertions, under the concept names inertia-laravel uses.
@@ -142,8 +142,37 @@ The prop types mirror inertia-laravel's, including their fluent APIs:
 | `Inertia.merge(value)`, `Inertia.deepMerge(value)` | Merged into the client's existing value. Chain `.prepend()`, `.append('data')`, `.matchOn('id')`. |
 | `Inertia.once(fn)` | Resolved once and remembered by the client across pages. Chain `.as(key)`, `.until(seconds \| Date)`, `.fresh()`. |
 | `Inertia.scroll(paginator, { wrapper?, metadata? })` | A paginated prop for `<InfiniteScroll>`. The value must implement `toScrollMetadata()`, or you pass `metadata`. |
+| `Inertia.live(value, { on, channel, throttle? })` | Reloaded by the client whenever one of its events arrives. See [Live props](#live-props). |
 
-These compose: `Inertia.defer(fn).merge()`, `Inertia.optional(fn).once()`, `Inertia.merge(value).once()`. Partial reloads accept dot-notation paths such as `only: ['user.posts']`.
+These compose: `Inertia.defer(fn).merge()`, `Inertia.optional(fn).once()`, `Inertia.merge(value).once()`, `Inertia.defer(fn).live({ ... })`. Partial reloads accept dot-notation paths such as `only: ['user.posts']`.
+
+### Live props
+
+A live prop tells the client which events refresh it. When one arrives on a subscribed channel, Inertia does a throttled partial reload of just that prop. The adapter only emits the protocol (`liveProps`, matching inertia-laravel's `Inertia::live` output and errors). The transport that delivers events, and whatever broadcasts them, are yours to provide (for example, a Server-Sent Events endpoint and Inertia's `LiveTransport` on the client).
+
+```ts
+class AlertChanged {
+  static readonly eventName = 'alert.changed'
+}
+
+return inertia.render('Alerts/Show', {
+  alert: Inertia.live(() => this.alerts.find(id), {
+    on: AlertChanged,                                  // or 'alert.changed', or an array of events
+    channel: { name: `alerts.${id}`, type: 'private' },  // or an array of channels
+  }),
+  comments: Inertia.defer(() => this.comments.for(id)).live({ on: 'comment.added', channel: `alerts.${id}` }),
+})
+```
+
+- `on` takes event names, or classes with a static `eventName`. At least one event is required.
+- `channel` takes `{ name, type }` (`public`, `private`, `presence` or `encrypted-private`), or a bare name, which is a public channel, as in Laravel. Names are sent unprefixed. Laravel can read an event's channels off its `broadcastOn()`; here you always pass them.
+- `throttle` sets the milliseconds between reloads; leave it out to keep the client's default.
+- `Inertia.always()`, `Inertia.optional()`, `Inertia.once()` and `Inertia.defer()` props have a `.live()` method too, which may be called more than once. Merge props can't be live: `.live()` on a merge prop, and `.merge()` on a live one, throw.
+- Live props work in shared data. Pass closures, so a live reload runs only the props it asks for.
+
+Live, deferred and polling reloads never consume flash data, validation errors or history flags, whichever component they name, so one landing between a redirect and the page it leads to can't take them. A form submission sent with `only` or `except` still gets them: the adapter remembers where its redirect leads, and the partial reload that follows it consumes them as before.
+
+`inertia.socketId` is the `X-Socket-Id` header Inertia's client sends once a transport provides a socket id, so a broadcaster can skip the sender's own tab.
 
 A rendered page can be extended with `.with(key, value)`, `.withViewData(data)` (passed to the root view only), `.status(code)`, and `.preserveBigIntegers()`.
 
@@ -182,7 +211,7 @@ return inertia.clearHistory().redirect('/login')   // e.g. after logout
 
 Every redirect follows the protocol rules, including Nest's `@Redirect()`, `res.redirect()`, and redirects from guards. If a handler returns nothing for an Inertia visit, the adapter redirects back.
 
-Flash data appears in the page's `flash` field (`usePage().flash`, `router.on('flash')`), not in props, and isn't kept in history.
+Flash data appears in the page's `flash` field (`usePage().flash`, `router.on('flash')`), not in props, and isn't kept in history. Partial reloads other than the one a form submission's redirect leads to leave flash data and validation errors in the session; see [Live props](#live-props).
 
 To encrypt history for a route or controller, use `@EncryptHistory()`. Use `inertia.encryptHistory()` for a single request, or `encryptHistory: true` in the config for every page.
 
@@ -402,7 +431,7 @@ InertiaModule.forRoot(defineConfig({
 | Precognition | ✅ |
 | Big integers (`preserveBigIntegers`) | ✅ |
 | SSR: `@inertiajs/vite` dev server and production server | ✅ |
-| Live props (`liveProps`, `X-Socket-Id`) | Not yet |
+| Live props (`liveProps`, `X-Socket-Id`) | ✅ (protocol only: bring your own transport and broadcaster) |
 | DevTools protocol | Not yet |
 | Fastify | Not yet (Express only) |
 

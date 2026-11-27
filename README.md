@@ -91,7 +91,7 @@ Other supporting pieces:
 
 ## Notes
 
-- The adapter targets the Express platform. Live props and the DevTools protocol aren't implemented yet; see the adapter's [coverage table](packages/nestjs-inertia/README.md#protocol-coverage).
+- The adapter targets the Express platform. Live props are supported at the protocol level (no transport or broadcaster is included), and the DevTools protocol isn't implemented yet; see the adapter's [coverage table](packages/nestjs-inertia/README.md#protocol-coverage).
 - The demo creates its tables with `sequelize.sync()` on boot, which suits a demo. Use migrations for real applications.
 - The package is published to npm as `@johnanthonyeletto/nestjs-inertia`. Releases go out through GitHub Releases; see [docs/distribution-plan.md](docs/distribution-plan.md).
 - `pnpm audit` reports a moderate advisory in `uuid`, which Sequelize 6 depends on. It concerns an API Sequelize doesn't use, and there's no upstream fix yet.
